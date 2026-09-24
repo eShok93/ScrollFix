@@ -1,0 +1,42 @@
+name: Device direction issue
+description: Report a mouse or trackpad that ScrollFix classifies incorrectly
+title: "Device direction: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the actual scroll direction for each device. Avoid private input logs, serial numbers, and screenshots of other apps.
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac model
+      placeholder: macOS 15.x, MacBook Pro …
+    validations:
+      required: true
+  - type: input
+    id: devices
+    attributes:
+      label: Mouse and trackpad models
+      placeholder: Mouse model and connection type; built-in or external trackpad
+    validations:
+      required: true
+  - type: dropdown
+    id: baseline
+    attributes:
+      label: macOS Natural scrolling
+      options: ["On", "Off", "Not sure"]
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual direction
+      description: Include the app status and what happens with Fix on and off.
+    validations:
+      required: true
+  - type: textarea
+    id: other-tools
+    attributes:
+      label: Other mouse drivers or scroll utilities
+      description: Include any remote desktop app if relevant.

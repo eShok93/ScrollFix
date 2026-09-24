@@ -1,0 +1,9 @@
+ScrollFix
+Copyright 2026 ScrollFix contributors
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+The device-classification approach was informed by Scroll Reverser by Nick Moore
+and contributors (https://github.com/pilotmoon/Scroll-Reverser), which is also
+licensed under Apache License 2.0. ScrollFix is an independent Swift implementation.
+
