@@ -4,7 +4,7 @@ Thanks for helping improve ScrollFix. Device classification is the hardest part,
 
 ## Build locally
 
-Use a Mac with Swift 6 and the macOS SDK. Run `./scripts/build-app.sh`, then open `build/ScrollFix.app`. The build folder is ignored by Git. The script creates a locally signed bundle; it does not make a notarized release.
+Use a Mac with Swift 6 and the macOS SDK. Run `./scripts/build-app.sh`, then open `build/ScrollFix.app`. Build and distribution folders are ignored by Git. The script creates a locally signed bundle; it does not make a notarized release.
 
 ## Report a problem
 

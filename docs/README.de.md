@@ -10,7 +10,11 @@ Weitere Ansichten: [Statusdetails](screenshots/scrollfix-status.jpg) · [Fix aus
 
 ## Installieren
 
-Derzeit gibt es **Quellcode statt eines notarisierten Downloads**. Du brauchst macOS 13 oder neuer und Swift 6 mit macOS SDK (Xcode Command Line Tools oder Xcode):
+Der [Vorschau-Release v0.1.0](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) enthält einen ZIP-Download für **Apple Silicon (arm64)**. Entpacke ihn, verschiebe `ScrollFix.app` nach `/Applications` und öffne sie. SHA-256 der ZIP-Datei: `443711d46fe664b25fa255d20dcbca01e1537f1c6c3a2959bfbc0a16b64e9731`.
+
+Die Vorschau ist **ad hoc signiert und nicht von Apple notarisiert**. macOS kann den Download deshalb blockieren. Lies [Apples Erklärung der Warnung](https://support.apple.com/de-de/102445), bevor du entscheidest, ob du die App öffnen möchtest. Du musst Gatekeeper dafür nicht global deaktivieren.
+
+Für einen Intel-Mac oder wenn du selbst bauen möchtest, brauchst du macOS 13 oder neuer und Swift 6 mit macOS SDK (Xcode Command Line Tools oder Xcode):
 
 ```sh
 git clone https://github.com/eShok93/ScrollFix.git
@@ -19,7 +23,7 @@ cd ScrollFix
 open build/ScrollFix.app
 ```
 
-Das Skript erzeugt `build/ScrollFix.app` und signiert sie lokal ad hoc. Für eine dauerhafte Installation verschiebe die App vor dem Aktivieren von **Bei Anmeldung starten** nach `/Applications`.
+Das Skript erzeugt `build/ScrollFix.app` und signiert sie lokal ad hoc. Verschiebe die App vor dem Aktivieren von **Bei Anmeldung starten** an ihren dauerhaften Ort.
 
 ## Erster Start
 
@@ -47,4 +51,4 @@ macOS verlangt für einen systemweiten Ereignisfilter eine weitreichende Freigab
 
 Die App korrigiert nur vertikales Scrollen. Hochauflösende Mausräder, ungewöhnliche Treiber, Remote-Desktop-Software und andere Scroll-Tools können die Geräteerkennung beeinflussen. **AKTIV** bestätigt den laufenden Filter, nicht das Gefühl an deiner konkreten Hardware. Siehe [Probleme lösen](TROUBLESHOOTING.md).
 
-Der lokale Build ist **nicht von Apple notarisiert**. Eine offizielle Binärveröffentlichung braucht eine Developer-ID-Signatur und Notarisierung. Der Quellcode steht unter [Apache 2.0](../LICENSE); Hinweise zur Vorlage stehen in [NOTICE](../NOTICE) und [Provenance](PROVENANCE.md).
+Der Vorschau-Download und lokale Builds sind **nicht von Apple notarisiert**. Eine vollständig verifizierte Binärveröffentlichung braucht eine Developer-ID-Signatur und Notarisierung. Der Quellcode steht unter [Apache 2.0](../LICENSE); Hinweise zur Vorlage stehen in [NOTICE](../NOTICE) und [Provenance](PROVENANCE.md).

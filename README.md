@@ -19,7 +19,11 @@ ScrollFix keeps the two directions separate without changing your macOS scrollin
 
 ## Get started
 
-ScrollFix currently ships as **source code**. You need a Mac with macOS 13 or newer and Swift 6 with the macOS SDK (Xcode Command Line Tools or Xcode). On a Mac:
+The [v0.1.0 preview release](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) provides a ZIP for **Apple Silicon (arm64)**. Extract it, move `ScrollFix.app` to `/Applications`, and open it. The ZIP's SHA-256 is `443711d46fe664b25fa255d20dcbca01e1537f1c6c3a2959bfbc0a16b64e9731`.
+
+This preview is **ad hoc signed and not Apple-notarized**. macOS may block the downloaded app. Read [Apple's explanation of the warning](https://support.apple.com/en-au/102445) before deciding whether to open it. Building the app from this repository is the transparent alternative; do not disable Gatekeeper globally.
+
+For an Intel Mac or a source build, you need macOS 13 or newer and Swift 6 with the macOS SDK (Xcode Command Line Tools or Xcode):
 
 ```sh
 git clone https://github.com/eShok93/ScrollFix.git
@@ -28,7 +32,7 @@ cd ScrollFix
 open build/ScrollFix.app
 ```
 
-The script builds `build/ScrollFix.app`, adds the icon, and signs the bundle locally with an ad hoc signature. It does **not** notarize the app. Inspect the source and build script before granting macOS access. For a permanent location, move the app to `/Applications` before enabling **Bei Anmeldung starten**.
+The script builds `build/ScrollFix.app`, adds the icon, and signs the bundle locally with an ad hoc signature. It does **not** notarize the app. Inspect the source and build script before granting macOS access. Move the app to its permanent location before enabling **Bei Anmeldung starten**.
 
 ### First launch
 
@@ -54,7 +58,7 @@ ScrollFix reads the macOS setting about every 1.5 seconds and switches its filte
 
 ScrollFix uses a Quartz session event tap for scroll-wheel and gesture events. macOS requires a broad system permission for this kind of input filtering. The app processes events in memory and does not write scroll history, send events over the network, or include analytics. Read the precise scope in [Privacy](docs/PRIVACY.md).
 
-The local build is **ad hoc signed, not Developer ID signed or notarized**. This is a source-first project, not a verified binary release. The build uses a stable bundle identifier (`app.scrollfix.mac`) and designated requirement so local rebuilds can retain their permission identity. A distributable binary release would need a stable Developer ID signature and Apple notarization.
+The preview binary and local builds are **ad hoc signed, not Developer ID signed or notarized**. The build uses a stable bundle identifier (`app.scrollfix.mac`) and designated requirement so local rebuilds can retain their permission identity. A fully verified binary release would need a stable Developer ID signature and Apple notarization.
 
 ## Limits
 
