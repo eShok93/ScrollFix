@@ -2,9 +2,9 @@
 
 **Natural trackpad scrolling. Classic mouse-wheel scrolling. One small macOS menu-bar app.**
 
-ScrollFix keeps the two directions separate without changing your macOS scrolling preference. It reads that preference, then corrects the device that needs it. The app is open source, runs locally, and has no network or telemetry code.
+macOS's “Natural scrolling” switch affects both devices. ScrollFix keeps their directions separate without changing that system preference: it reads the baseline, then corrects the device that needs it. The app is open source, runs locally, and has no network or telemetry code.
 
-[Deutsch lesen](docs/README.de.md) · [How it works](docs/HOW-IT-WORKS.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md)
+[See the 130-line scroll filter](Sources/ScrollFix/ScrollEventEngine.swift) · [How it works](docs/HOW-IT-WORKS.md) · [Deutsch lesen](docs/README.de.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md)
 
 ![ScrollFix active: trackpad natural, mouse wheel classic](docs/screenshots/scrollfix-active.jpg)
 
@@ -16,6 +16,10 @@ ScrollFix keeps the two directions separate without changing your macOS scrollin
 | ![Expanded status: macOS baseline, permission, and running filter](docs/screenshots/scrollfix-status.jpg) | ![Fix off: both devices follow macOS and scroll classically](docs/screenshots/scrollfix-off.jpg) |
 
 </details>
+
+### What is this project?
+
+[Scroll Reverser](https://github.com/pilotmoon/Scroll-Reverser) is an established, more configurable solution. ScrollFix is a focused Swift/SwiftUI implementation of one outcome: a natural trackpad and a classic mouse wheel, with a visible filter status. Its gesture-based device classification was informed by Scroll Reverser; [provenance and limits](docs/PROVENANCE.md) are documented openly. If this repo is useful to you, you can star it to find it again.
 
 ## Get started
 

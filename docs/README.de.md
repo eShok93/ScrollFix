@@ -1,12 +1,14 @@
 # ScrollFix
 
-**Trackpad natürlich. Mausrad klassisch.** ScrollFix ist eine kleine macOS-Menüleisten-App, die beide Scrollrichtungen trennt. Sie liest die gemeinsame macOS-Einstellung und korrigiert je nach Ausgangslage das passende Gerät. Die Systemeinstellung selbst bleibt unverändert.
+**Trackpad natürlich. Mausrad klassisch.** macOS koppelt „Natürliches Scrollen“ für beide Geräte. ScrollFix ist eine kleine Menüleisten-App, die ihre Scrollrichtungen trennt. Sie liest die gemeinsame macOS-Einstellung und korrigiert je nach Ausgangslage das passende Gerät. Die Systemeinstellung selbst bleibt unverändert.
 
-[English README](../README.md) · [Technik](HOW-IT-WORKS.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
+[Scrollfilter im Quellcode](../Sources/ScrollFix/ScrollEventEngine.swift) · [English README](../README.md) · [Technik](HOW-IT-WORKS.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
 
 ![ScrollFix aktiv: Trackpad natürlich und Mausrad klassisch](screenshots/scrollfix-active.jpg)
 
 Weitere Ansichten: [Statusdetails](screenshots/scrollfix-status.jpg) · [Fix aus](screenshots/scrollfix-off.jpg)
+
+[Scroll Reverser](https://github.com/pilotmoon/Scroll-Reverser) ist eine etablierte Lösung mit mehr Einstellmöglichkeiten. ScrollFix konzentriert sich auf ein Ergebnis und zeigt den Filterzustand direkt an. Die Geräteerkennung ist von Scroll Reverser inspiriert; [Herkunft und Grenzen](PROVENANCE.md) sind dokumentiert. Wenn dir das Repo nützt, kannst du es mit einem Star für später speichern.
 
 ## Installieren
 
