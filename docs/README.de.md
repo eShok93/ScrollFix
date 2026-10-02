@@ -87,7 +87,7 @@ Ja. Scrollphasen liefern keine eindeutige Gerätekennung pro Ereignis. Unbekannt
 
 ## Qualität und Entwicklung
 
-Swift und SwiftUI, ohne externe Paketabhängigkeiten. **259 Offline-Tests bestanden am 3. Oktober 2026.** Das bestätigt geprüfte Codepfade, keine universelle Hardwarekompatibilität.
+Swift und SwiftUI, ohne externe Paketabhängigkeiten. Automatische Prüfungen helfen gegen wiederkehrende Fehler; zusätzlich sind echte Tests mit Maus, Trackpad und Tastatur nötig. Als Nutzer musst du keine Tests installieren oder ausführen. [Details für Entwickler](../CONTRIBUTING.md#verification).
 
 [Technik](HOW-IT-WORKS.md) · [Mitwirken](../CONTRIBUTING.md) · [Release-Anforderungen](RELEASING.md)
 

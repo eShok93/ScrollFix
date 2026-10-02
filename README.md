@@ -8,7 +8,7 @@ ScrollFix is an open-source Mac menu bar app for people who prefer Windows mouse
 
 ![ScrollFix on macOS: natural trackpad, Windows-style mouse wheel, middle-click scrolling and Direct Windows mode](docs/screenshots/scrollfix-current.png)
 
-*Mouse controls. Version 0.3.2 also includes Home/End navigation. UI labels are currently German.*
+*ScrollFix 0.3.2: mouse scrolling, middle-click and Home/End. UI labels are currently German.*
 
 ## What ScrollFix does
 
@@ -91,7 +91,7 @@ Device classification is heuristic: Quartz scroll phases and line-wheel events d
 
 ## Development and verification
 
-ScrollFix uses Swift and SwiftUI with no external package dependencies. The current offline suite passed **259 tests on 3 October 2026**. Tests cover numeric bounds, event routing, source handoff, permission policy and lifecycle; they do not establish hardware compatibility for every device.
+ScrollFix uses Swift and SwiftUI with no external package dependencies. Automated checks help prevent regressions; real mouse, trackpad and keyboard tests are also needed. Users do not need to install or run the test suite. [Developer verification details](CONTRIBUTING.md#verification).
 
 [How it works](docs/HOW-IT-WORKS.md) · [Contributing](CONTRIBUTING.md) · [Release requirements](docs/RELEASING.md)
 
