@@ -60,9 +60,57 @@ final class ScrollFixModel: ObservableObject {
     private static let isQABuild = Bundle.main.bundleIdentifier != "app.scrollfix.mac"
         || Bundle.main.object(forInfoDictionaryKey: "ScrollFixBuildKind") as? String == "qa"
 
-    @Published var enabled = UserDefaults.standard.object(forKey: "scrollFix.enabled") as? Bool ?? true {
+    private static var initialSettings: WindowsInputSettings {
+        WindowsInputSettingsStore(defaults: .standard).load(isQA: isQABuild)
+    }
+    @Published var homeEndSettings = ScrollFixModel.initialSettings.homeEnd {
+        didSet { persistInputSettings(); updateKeyboard() }
+    }
+    @Published private(set) var keyboardRunning = false
+    @Published private(set) var keyboardIssue: String?
+    @Published private(set) var keyboardDiagnostic = "Noch kein Home/End-Ereignis"
+    @Published private(set) var secureKeyboardInput = false
+    @Published private(set) var terminalSelectionStatus = TerminalSelectionSetup.live.status
+    @Published private(set) var terminalSelectionSetupMessage: String?
+    private let keyboard = KeyboardInputController()
+
+    func setupTerminalSelection() {
+        do {
+            try TerminalSelectionSetup.live.install()
+            terminalSelectionStatus = TerminalSelectionSetup.live.status
+            terminalSelectionSetupMessage = "Eingerichtet. Öffne ein neues Terminal-Fenster, damit die Auswahl verfügbar ist."
+            homeEndSettings.terminalShiftSelection = .zshRegion
+        } catch {
+            terminalSelectionStatus = TerminalSelectionSetup.live.status
+            terminalSelectionSetupMessage = error.localizedDescription
+            updateKeyboard()
+        }
+    }
+
+    private func persistInputSettings() {
+        var settings = WindowsInputSettings()
+        settings.homeEnd = homeEndSettings
+        settings.mouseWheelEnabled = enabled
+        settings.autoScrollEnabled = autoScrollEnabled
+        settings.wheelFeel = wheelFeel.rawValue
+        settings.wheelMinimumStep = wheelMinimumStep
+        WindowsInputSettingsStore(defaults: .standard).save(settings)
+    }
+    private func updateKeyboard() {
+        let canPost = homeEndSettings.enabled && !sessionSuspended
+            && AutoScrollAccessRequest.check(interceptionAllowed: permissionGranted,
+                                             preflight: { ScrollEventAccess.canPost })
+        let effectiveSettings = TerminalSelectionSetup.effectiveSettings(homeEndSettings, status: terminalSelectionStatus)
+        keyboard.configure(effectiveSettings, active: permissionGranted && canPost && !sessionSuspended)
+        if homeEndSettings.enabled && permissionGranted && !sessionSuspended && !canPost {
+            keyboardIssue = "macOS-Zugriff für die Tastatursteuerung fehlt. Klicke auf „Tastatur erneut prüfen“."
+        }
+        keyboard.refreshSecureInput()
+    }
+
+    @Published var enabled = ScrollFixModel.initialSettings.mouseWheelEnabled {
         didSet {
-            UserDefaults.standard.set(enabled, forKey: "scrollFix.enabled")
+            persistInputSettings()
             if enabled { engine.resumeAfterUserInputDisable() }
             updateEngine()
             applyPointerPolicy()
@@ -77,32 +125,25 @@ final class ScrollFixModel: ObservableObject {
             updatePointerInventory()
         }
     }
-    @Published var autoScrollEnabled = UserDefaults.standard.object(forKey: "scrollFix.autoScrollEnabled") as? Bool
-        ?? !ScrollFixModel.isQABuild {
+    @Published var autoScrollEnabled = ScrollFixModel.initialSettings.autoScrollEnabled {
         didSet {
-            UserDefaults.standard.set(autoScrollEnabled, forKey: "scrollFix.autoScrollEnabled")
+            persistInputSettings()
             if autoScrollEnabled { retryAutoScrollPermission() }
             else { updateAutoScroll() }
         }
     }
 
     @Published var wheelFeel: MouseWheelFeel = {
-        let defaults = UserDefaults.standard
-        let saved = MouseWheelFeel(rawValue: defaults.string(forKey: "scrollFix.wheelFeel") ?? "")
-        if saved == .tactile {
-            defaults.set(MouseWheelFeel.direct.rawValue, forKey: "scrollFix.wheelFeel")
-            return .direct
-        }
-        return saved ?? (ScrollFixModel.isQABuild ? .smooth : .direct)
+        MouseWheelFeel(rawValue: ScrollFixModel.initialSettings.wheelFeel) ?? .direct
     }() {
         didSet {
-            UserDefaults.standard.set(wheelFeel.rawValue, forKey: "scrollFix.wheelFeel")
+            persistInputSettings()
             updateEngine()
         }
     }
-    @Published var wheelMinimumStep = min(128, max(16, UserDefaults.standard.object(forKey: "scrollFix.wheelMinimumStep") as? Int ?? 48)) {
+    @Published var wheelMinimumStep = ScrollFixModel.initialSettings.wheelMinimumStep {
         didSet {
-            UserDefaults.standard.set(wheelMinimumStep, forKey: "scrollFix.wheelMinimumStep")
+            persistInputSettings()
             updateEngine()
         }
     }
@@ -119,7 +160,15 @@ final class ScrollFixModel: ObservableObject {
     func recoverFeatures() {
         guard permissionGranted || engine.isRunning else { openAccessibilitySettings(); return }
         if needsAttention { retryFilter() }
-        if wheelNeedsAccess || (autoScrollEnabled && autoScrollIssue != nil) { retryAutoScrollPermission() }
+        let keyboardNeedsRecovery = homeEndSettings.enabled && !keyboardRunning
+        if wheelNeedsAccess || (autoScrollEnabled && autoScrollIssue != nil) || keyboardNeedsRecovery {
+            retryAutoScrollPermission()
+        }
+        if keyboardNeedsRecovery && !sessionSuspended
+            && AutoScrollAccessRequest.check(interceptionAllowed: permissionGranted,
+                                             preflight: { ScrollEventAccess.canPost }) {
+            keyboard.retry()
+        }
         refreshPermission()
     }
     @Published private(set) var permissionGranted = false
@@ -176,9 +225,14 @@ final class ScrollFixModel: ObservableObject {
             autoScrollHasIssue: autoScrollIssue != nil
         )
     }
-    var anyFeatureEnabled: Bool { statusSnapshot.anyFeatureEnabled }
-    var allEnabledFeaturesActive: Bool { statusSnapshot.allEnabledFeaturesActive }
-    var overallAccessibilityState: String { statusSnapshot.overallAccessibilityState }
+    var anyFeatureEnabled: Bool { statusSnapshot.anyFeatureEnabled || homeEndSettings.enabled }
+    var allEnabledFeaturesActive: Bool {
+        anyFeatureEnabled && (!enabled || engineRunning) && (!autoScrollEnabled || autoScrollRunning)
+            && !wheelNeedsAccess && (!homeEndSettings.enabled || keyboardRunning)
+    }
+    var overallAccessibilityState: String {
+        !anyFeatureEnabled ? "nicht aktiv" : (allEnabledFeaturesActive ? "aktiv" : "prüfen")
+    }
     var canManageLoginItem: Bool { !Self.isQABuild }
     var showsDiagnostics: Bool { Self.isQABuild }
     var pointerInventoryLabel: String {
@@ -226,6 +280,23 @@ final class ScrollFixModel: ObservableObject {
     @Published var autoScrollAccessGranted = false
 
     init() {
+        keyboard.onSecureInput = { [weak self] secure in
+            guard let self, self.secureKeyboardInput != secure else { return }
+            self.secureKeyboardInput = secure
+        }
+        keyboard.onNavigationDiagnostic = { [weak self] code, flags, context, settings, replaced, focusReadStatus in
+            let fresh = WindowsHomeEndRule(settings: settings).apply(
+                .init(kind: .down, keyCode: code, modifiers: KeyboardEventEncoding.modifiers(.init(rawValue: flags))),
+                context: context)
+            let ruleReplaces: Bool
+            if case .replace = fresh { ruleReplaces = true } else { ruleReplaces = false }
+            self?.keyboardDiagnostic = "Code \(code) · Flags \(flags) · Fokus \(context.focus) · \(replaced ? "übersetzt" : "unverändert") · App \(context.bundleID.isEmpty ? "fehlt" : context.bundleID) · PID \(context.processID) · Aktiv \(settings.enabled) · Erlaubt \(settings.allowedApps.contains(context.bundleID)) · Ausgeschlossen \(settings.excludedApps.contains(context.bundleID)) · Secure \(context.secureInput) · Neue Regel ersetzt \(ruleReplaces) · \(focusReadStatus)"
+        }
+        keyboard.onState = { [weak self] running, issue in
+            guard let self else { return }
+            if self.keyboardRunning != running { self.keyboardRunning = running }
+            if self.keyboardIssue != issue { self.keyboardIssue = issue }
+        }
         autoScroll.onInteraction = { [weak self] in self?.engine.cancelWheelMotion() }
         engine.onRunningChange = { [weak self] _, issue in
             guard let self else { return }
@@ -282,6 +353,7 @@ final class ScrollFixModel: ObservableObject {
         for observer in workspaceObservers { workspace.removeObserver(observer) }
         engine.shutdown()
         pointerInventory.stop()
+        keyboard.configure(homeEndSettings, active: false)
     }
 
     private func handleSessionEvent(_ name: NSNotification.Name) {
@@ -324,6 +396,7 @@ final class ScrollFixModel: ObservableObject {
         if startsAtLogin != loginEnabled { startsAtLogin = loginEnabled }
         updateEngine()
         updateAutoScroll()
+        updateKeyboard()
         updateAutoScrollDiagnostics()
         updateLastSource()
         if !sessionSuspended { pointerInventory.retryIfNeeded() }
@@ -776,6 +849,19 @@ private struct FeaturePanel: View {
                 .font(.system(size: 10)).foregroundStyle(ScrollFixPalette.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 38).padding(.bottom, 4)
+            Divider().overlay(ScrollFixPalette.border)
+            DeviceRow(symbol: "keyboard", title: "Home / End wie Windows",
+                      detail: !model.homeEndSettings.enabled ? "Aus" : (model.keyboardRunning ? "Zeile · Ctrl: Dokument" : "Zugriff prüfen"),
+                      toggle: $model.homeEndSettings.enabled,
+                      hint: "In Textfeldern: Home und End bewegen den Cursor zum Zeilenanfang oder -ende. Ctrl springt im Dokument. Shift erweitert die Auswahl.")
+            if let issue = model.keyboardIssue, model.homeEndSettings.enabled {
+                Text(issue).font(.system(size: 11)).foregroundStyle(ScrollFixPalette.amber)
+                Button("Tastatur erneut prüfen") { model.recoverFeatures() }
+            }
+            if model.secureKeyboardInput && model.homeEndSettings.enabled {
+                Text("Geschützte Tastatureingabe aktiv: Home / End bleiben vorübergehend unverändert.")
+                    .font(.system(size: 11)).foregroundStyle(ScrollFixPalette.secondary)
+            }
             if model.needsFeatureRecovery {
                 Button(model.featureRecoveryTitle) { model.recoverFeatures() }
                     .buttonStyle(PrimaryButtonStyle()).padding(.top, 4)
@@ -1030,6 +1116,10 @@ private struct SettingsPanel: View {
                         Text(wheelFeelExplanation)
                             .foregroundStyle(ScrollFixPalette.secondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        HomeEndOptionsView(settings: $model.homeEndSettings,
+                                           terminalStatus: model.terminalSelectionStatus,
+                                           setupMessage: model.terminalSelectionSetupMessage,
+                                           setupTerminal: model.setupTerminalSelection)
                         if model.wheelFeel != .native {
                             Text("Scrollstrecke pro Radschritt")
                                 .foregroundStyle(ScrollFixPalette.text)
@@ -1100,6 +1190,7 @@ private struct SettingsPanel: View {
                                 StatusRow(title: "Scrollbewegungen auslösen",
                                           detail: model.autoScrollAccessGranted || model.wheelCanPost ? "Erlaubt" : "Freigabe fehlt",
                                           good: model.autoScrollAccessGranted || model.wheelCanPost)
+                                SettingRow(title: "Home/End-Test", detail: model.keyboardDiagnostic)
                                 SettingRow(title: "Trackpad", detail: model.trackpadDirection)
                                 SettingRow(title: "Mausrad-Erkennung", detail: model.mouseDirection)
                             }

@@ -6,7 +6,7 @@ let package = Package(
     platforms: [.macOS(.v13)],
     products: [.executable(name: "ScrollFix", targets: ["ScrollFix"])],
     targets: [
-        .executableTarget(name: "ScrollFix"),
+        .executableTarget(name: "ScrollFix", resources: [.process("Resources")]),
         .testTarget(name: "ScrollFixTests", dependencies: ["ScrollFix"])
     ]
 )

@@ -4,11 +4,11 @@
 
 ScrollFix is an open-source Mac menu bar app for people who prefer Windows mouse behavior. macOS shares its Natural scrolling setting between mouse and trackpad. ScrollFix corrects recognized mouse-wheel input separately, with immediate wheel movement by default.
 
-[Build ScrollFix](#build-and-install) · [Deutsch](docs/README.de.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md)
+[Installation guide](docs/INSTALL.md) · [Build from source](#build-and-install) · [Deutsch](docs/README.de.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md)
 
 ![ScrollFix on macOS: natural trackpad, Windows-style mouse wheel, middle-click scrolling and Direct Windows mode](docs/screenshots/scrollfix-current.png)
 
-*Current interface. UI labels are currently German.*
+*Mouse controls. Version 0.3.2 also includes Home/End navigation. UI labels are currently German.*
 
 ## What ScrollFix does
 
@@ -17,15 +17,23 @@ ScrollFix is an open-source Mac menu bar app for people who prefer Windows mouse
 - **Middle-click autoscroll:** click the wheel on ordinary content, move the pointer to scroll, then click again to stop.
 - **Middle-click links:** recognized links keep their native click so the browser can open a new tab.
 - **Start at login:** mouse correction, middle-click scrolling and login startup default to on at first launch.
+- **Home/End like Windows:** line navigation and Shift selection in recognized text fields; Ctrl reaches document boundaries.
+- **Terminal input selection:** set up local zsh directly in the app, then use Shift+Home/End in new terminals.
 - **Work locally:** no account, analytics or network communication in the application.
 
-ScrollFix currently focuses on mouse behavior. Keyboard remapping, Windows shortcuts and display-quality changes are not included.
+ScrollFix also supports Home/End navigation and optional local zsh input selection. A global Ctrl/Cmd swap, Ctrl+wheel app zoom, Windows desktop shortcuts and display-quality changes are not included. See [Terminal setup and compatibility](docs/TERMINAL.md).
+
+## Download and installation
+
+**Current version: 0.3.2.** The source is updated; a verified DMG download is not available yet. The planned installer works like a normal Mac app: open the DMG, drag ScrollFix into Applications, then open it and allow macOS access. No Xcode or Terminal commands are needed with that download. [Simple installation guide](docs/INSTALL.md).
+
+The maintainer still needs an Apple Developer ID certificate and notarization before publishing that DMG. Do not use the old preview expecting the features below.
 
 ## Build and install
 
 The current features are available in the source. **The old [v0.1.0 preview](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) does not include them.** It is ad hoc signed, not notarized, and predates the signing changes. No new verified binary release is available yet.
 
-Requirements: **macOS 13 or newer**, **Swift 6**, and the macOS SDK from Xcode or Command Line Tools. The build targets the architecture of your Mac; the old preview is Apple Silicon only.
+Requirements: **macOS 13 or newer**, **Swift 6**, and the macOS SDK from Xcode or Command Line Tools. The default build targets your Mac. Set `SCROLLFIX_BUILD_ARCHITECTURES=universal` for Apple Silicon and Intel; the old preview is Apple Silicon only.
 
 ```sh
 git clone https://github.com/eShok93/ScrollFix.git
@@ -42,6 +50,10 @@ Move `build/ScrollFix.app` to `/Applications`, then open it there. Keep the app 
 3. Return to ScrollFix and check **AKTIV**. Test both the trackpad and mouse wheel once.
 
 The default wheel mode is **Direkt (Windows)**. **Mausrad**, **Mittelklick-Scrollen** and **Bei Anmeldung starten** are enabled by default; saved choices are respected. macOS may also request permission to generate scroll movement for autoscroll or smooth scrolling. This means movement inside your apps, not sending data to a server.
+
+### Terminal selection
+
+In **Feineinstellungen**, click **Terminal einrichten** and confirm. ScrollFix backs up your startup file and installs the bundled module for your user. Open a new local zsh Terminal window afterward. No copied commands are required. Unsupported custom shell setups stay unchanged; see [compatibility and removal](docs/TERMINAL.md).
 
 ## Choose your mouse-wheel feel
 
@@ -71,7 +83,7 @@ Dense, recognized line-wheel input uses a shorter smooth response, and reversing
 
 ### Why does ScrollFix need macOS access?
 
-It must intercept and change scroll movement across apps. Middle-click routing also checks Accessibility roles to preserve link clicks. The app does not subscribe to typed-text events, read page content or transmit events over a network. See the exact scope in [Privacy](docs/PRIVACY.md).
+It must intercept and change scroll movement across apps. Middle-click routing also checks Accessibility roles to preserve link clicks. The enabled Home/End feature also observes keyboard keycodes and modifiers. It does not record typed text or transmit events over a network. The optional Terminal setup reads and preserves your local shell startup file. See the exact scope in [Privacy](docs/PRIVACY.md).
 
 ### Is the trackpad guaranteed to stay unchanged?
 
@@ -79,7 +91,7 @@ Device classification is heuristic: Quartz scroll phases and line-wheel events d
 
 ## Development and verification
 
-ScrollFix uses Swift and SwiftUI with no external package dependencies. The current offline suite passed **215 tests on 2 October 2026**. Tests cover numeric bounds, event routing, source handoff, permission policy and lifecycle; they do not establish hardware compatibility for every device.
+ScrollFix uses Swift and SwiftUI with no external package dependencies. The current offline suite passed **259 tests on 3 October 2026**. Tests cover numeric bounds, event routing, source handoff, permission policy and lifecycle; they do not establish hardware compatibility for every device.
 
 [How it works](docs/HOW-IT-WORKS.md) · [Contributing](CONTRIBUTING.md) · [Release requirements](docs/RELEASING.md)
 

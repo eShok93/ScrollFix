@@ -38,3 +38,7 @@ Move the built app to its permanent location, start that copy, then enable **Bei
 ## Remove ScrollFix
 
 Turn off **Bei Anmeldung starten**, choose **Beenden**, remove the app bundle, and revoke its macOS permission under Privacy & Security if desired. ScrollFix does not install a kernel extension, daemon, network service, or separate helper app.
+
+## Shift+Home/End does not select the Terminal input
+
+Use **Feineinstellungen → Terminal einrichten**. Open a new local zsh Terminal window after setup. A running shell does not reload its startup file automatically. This selects the input line, not previous terminal output; custom startup locations and remote shells need separate integration. See [Terminal setup](TERMINAL.md). If you remove ScrollFix, also remove its managed shell section as described there.

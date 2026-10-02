@@ -4,7 +4,7 @@
 
 ScrollFix ist eine Open-Source-App für die macOS-Menüleiste. Sie richtet sich an alle, die das Mausverhalten von Windows bevorzugen. macOS verwendet dieselbe Einstellung für Maus und Trackpad. ScrollFix korrigiert erkannte Mausradbewegungen getrennt und bewegt die Seite standardmäßig sofort.
 
-[Installieren](#bauen-und-installieren) · [English](../README.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
+[Installationsanleitung](INSTALL.md) · [Selbst bauen](#bauen-und-installieren) · [English](../README.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
 
 ![ScrollFix auf dem Mac: natürliches Trackpad, Windows-Mausrad, Mittelklick-Scrollen und Direkt-Modus](screenshots/scrollfix-current.png)
 
@@ -15,15 +15,23 @@ ScrollFix ist eine Open-Source-App für die macOS-Menüleiste. Sie richtet sich 
 - **Mittelklick-Scrollen:** Auf eine freie Fläche klicken, den Zeiger bewegen und zum Stoppen erneut klicken.
 - **Links per Mittelklick öffnen:** Erkannte Links behalten den ursprünglichen Klick. Der Browser kann sie in einem neuen Tab öffnen.
 - **Bei Anmeldung starten:** Mausrad, Mittelklick-Scrollen und Autostart sind bei der ersten Einrichtung aktiviert.
+- **Home/End wie Windows:** Zeilenanfang/-ende und Auswahl mit Shift in erkannten Textfeldern; Ctrl springt im Dokument.
+- **Terminal-Eingabe markieren:** Lokale zsh direkt in der App einrichten und Shift+Home/End in neuen Fenstern nutzen.
 - **Lokal arbeiten:** Kein Konto, keine Analyse-Software und keine Netzwerkkommunikation in der App.
 
-ScrollFix konzentriert sich derzeit auf das Mausverhalten. Tastaturbelegung, Windows-Kürzel und Änderungen der Displayqualität gehören nicht zum Funktionsumfang.
+ScrollFix unterstützt außerdem Home/End und die optionale Auswahl der lokalen zsh-Eingabezeile. Ein globaler Ctrl/Cmd-Tausch, App-Zoom per Ctrl+Mausrad, Windows-Desktop-Kürzel und Änderungen der Displayqualität sind noch nicht enthalten. [Einrichtung und Grenzen](TERMINAL.md).
+
+## Download und Installation
+
+**Aktuelle Version: 0.3.2.** Der Quellcode ist aktualisiert; eine verifizierte DMG ist noch nicht veröffentlicht. Mit dem geplanten Download geht es wie bei einer normalen Mac-App: DMG öffnen, ScrollFix nach Programme ziehen, dort öffnen und den macOS-Zugriff erlauben. Dafür brauchst du kein Xcode und keine Terminal-Befehle. [Einfache Installationsanleitung](INSTALL.md).
+
+Für die Veröffentlichung fehlen noch Apples Developer-ID-Zertifikat und Notarisierung. Die alte Preview enthält die aktuellen Funktionen nicht.
 
 ## Bauen und installieren
 
 Die aktuellen Funktionen sind im Quellcode verfügbar. **Die alte [Preview v0.1.0](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) enthält sie nicht.** Sie ist lokal signiert, nicht notarisiert und stammt aus der Zeit vor den Signaturkorrekturen. Ein neuer verifizierter Binärdownload ist noch nicht verfügbar.
 
-Du brauchst **macOS 13 oder neuer**, **Swift 6** und das macOS SDK aus Xcode oder den Command Line Tools. Der Build passt zur Architektur deines Macs; die alte Preview unterstützt nur Apple Silicon.
+Du brauchst **macOS 13 oder neuer**, **Swift 6** und das macOS SDK aus Xcode oder den Command Line Tools. Der Standard-Build passt zur Architektur deines Macs. Mit `SCROLLFIX_BUILD_ARCHITECTURES=universal` baust du für Apple Silicon und Intel; die alte Preview unterstützt nur Apple Silicon.
 
 ```sh
 git clone https://github.com/eShok93/ScrollFix.git
@@ -40,6 +48,10 @@ Verschiebe `build/ScrollFix.app` nach `/Applications` und öffne sie dort. Lass 
 3. Kehre zurück und prüfe **AKTIV**. Teste Trackpad und Mausrad einmal.
 
 **Direkt (Windows)** ist vorausgewählt. **Mausrad**, **Mittelklick-Scrollen** und **Bei Anmeldung starten** sind standardmäßig an; gespeicherte Entscheidungen bleiben erhalten. Für Mittelklick-Scrollen oder weiche Bewegung kann macOS zusätzlich erlauben müssen, dass die App Scrollbewegungen auslöst. Gemeint ist Bewegung in deinen Apps, keine Datenübertragung an einen Server.
+
+### Terminal-Auswahl
+
+Klicke unter **Feineinstellungen** auf **Terminal einrichten** und bestätige den Dialog. ScrollFix sichert die Shell-Konfiguration und installiert das mitgelieferte Modul in deinem Benutzerordner. Danach ein neues lokales zsh-Terminal öffnen. Keine Befehle kopieren. Besondere Shell-Konfigurationen bleiben unverändert; [Einrichtung und Grenzen](TERMINAL.md).
 
 ## Mausrad einstellen
 
@@ -67,7 +79,7 @@ Dichte, erkannte Zeilenimpulse erhalten im weichen Modus eine kürzere Antwort; 
 
 ### Was passiert mit meinen Eingaben?
 
-Die Verarbeitung läuft auf deinem Mac. Die App liest keine getippten Texte und keine Seiteninhalte. Sie überträgt keine Ereignisse übers Netzwerk. Der genaue Umfang steht im [Datenschutz-Dokument](PRIVACY.md).
+Die Verarbeitung läuft auf deinem Mac. Home/End verarbeitet Tastencodes und Zusatztasten, speichert aber keine getippten Texte. Die optionale Terminal-Einrichtung liest und erhält deine lokale Shell-Konfiguration. Sie überträgt keine Ereignisse übers Netzwerk. Der genaue Umfang steht im [Datenschutz-Dokument](PRIVACY.md).
 
 ### Gibt es Grenzen bei der Geräteerkennung?
 
@@ -75,7 +87,7 @@ Ja. Scrollphasen liefern keine eindeutige Gerätekennung pro Ereignis. Unbekannt
 
 ## Qualität und Entwicklung
 
-Swift und SwiftUI, ohne externe Paketabhängigkeiten. **215 Offline-Tests bestanden am 2. Oktober 2026.** Das bestätigt geprüfte Codepfade, keine universelle Hardwarekompatibilität.
+Swift und SwiftUI, ohne externe Paketabhängigkeiten. **259 Offline-Tests bestanden am 3. Oktober 2026.** Das bestätigt geprüfte Codepfade, keine universelle Hardwarekompatibilität.
 
 [Technik](HOW-IT-WORKS.md) · [Mitwirken](../CONTRIBUTING.md) · [Release-Anforderungen](RELEASING.md)
 

@@ -1,0 +1,8 @@
+{
+  "terminalBundleIDs": [
+    "com.apple.Terminal", "com.googlecode.iterm2", "com.mitchellh.ghostty",
+    "dev.warp.Warp-Stable", "org.alacritty", "net.kovidgoyal.kitty", "com.github.wez.wezterm"
+  ],
+  "integratedTerminalBundleIDs": ["com.microsoft.VSCode", "com.microsoft.VSCodeInsiders"],
+  "integratedTerminalLabels": ["Terminal input", "Terminaleingabe"]
+}

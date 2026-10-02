@@ -84,6 +84,13 @@ if [ "$BUILD_KIND" = "qa" ]; then
   set -- -debug-info-format none
 fi
 
+case "${SCROLLFIX_BUILD_ARCHITECTURES:-native}" in
+  native) ;;
+  universal) set -- "$@" --arch arm64 --arch x86_64 ;;
+  arm64|x86_64) set -- "$@" --arch "$SCROLLFIX_BUILD_ARCHITECTURES" ;;
+  *) echo "SCROLLFIX_BUILD_ARCHITECTURES must be native, universal, arm64, or x86_64" >&2; exit 1 ;;
+esac
+
 if [ "${SCROLLFIX_REQUIRE_DEVELOPER_ID:-0}" = "1" ]; then
   case "${SCROLLFIX_CODESIGN_IDENTITY:-}" in
     "Developer ID Application:"*) ;;
@@ -100,10 +107,10 @@ fi
 
 if [ "${SCROLLFIX_SWIFTPM_DISABLE_SANDBOX:-0}" = "1" ]; then
   swift build --disable-sandbox -c release "$@"
-  BIN_PATH="$(swift build --disable-sandbox -c release --show-bin-path)"
+  BIN_PATH="$(swift build --disable-sandbox -c release "$@" --show-bin-path)"
 else
   swift build -c release "$@"
-  BIN_PATH="$(swift build -c release --show-bin-path)"
+  BIN_PATH="$(swift build -c release "$@" --show-bin-path)"
 fi
 
 CONTENTS="$APP/Contents"
@@ -130,6 +137,7 @@ fi
 rm -rf "$ICONSET"
 mkdir -p "$MACOS" "$RESOURCES" "$ICONSET"
 cp "$BIN_PATH/ScrollFix" "$MACOS/ScrollFix"
+cp -R "$BIN_PATH/ScrollFix_ScrollFix.bundle" "$RESOURCES/ScrollFix_ScrollFix.bundle"
 cp Resources/ScrollFixLogo.svg "$RESOURCES/ScrollFixLogo.svg"
 cp LICENSE NOTICE "$RESOURCES/"
 
@@ -154,12 +162,12 @@ cat > "$CONTENTS/Info.plist" <<PLIST
   <key>CFBundleName</key><string>ScrollFix</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
-  <key>CFBundleShortVersionString</key><string>0.2.1</string>
-  <key>CFBundleVersion</key><string>3</string>
+  <key>CFBundleShortVersionString</key><string>0.3.2</string>
+  <key>CFBundleVersion</key><string>6</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>LSUIElement</key><true/>
   <key>ScrollFixBuildKind</key><string>$BUILD_KIND</string>
-  <key>NSAccessibilityUsageDescription</key><string>ScrollFix benötigt Bedienungshilfen, um Mausrad und Trackpad getrennt zu steuern und optional den Mittelklick zu verarbeiten.</string>
+  <key>NSAccessibilityUsageDescription</key><string>ScrollFix benötigt Bedienungshilfen für getrennte Scrollrichtungen, Mittelklick-Scrollen und optional Home/End wie unter Windows. Tastatureingaben werden nicht gespeichert.</string>
 </dict></plist>
 PLIST
 
