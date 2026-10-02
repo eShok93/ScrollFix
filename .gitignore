@@ -4,3 +4,24 @@ build/
 dist/
 .DS_Store
 *.xcuserstate
+
+# Local QA records and UI captures can contain host-specific paths, process
+# details, or screenshots. Keep them out of broad source-release staging.
+/docs/DEV-V*-QA.md
+/docs/QA-HANDOFF-AUDIT.md
+/docs/qa-assets/dev-v*/
+/docs/qa-assets/*.json
+/docs/retired-builds-*.json
+/scripts/retired-qa-bundles.txt
+
+# Private agent instructions and local review records stay in the development checkout.
+/AGENTS.md
+/.agents/
+/.codex/
+/docs/QA.md
+/docs/SECURITY-AUDIT.md
+/docs/DISPLAY-CLARITY.md
+/docs/WINDOWS-WORKFLOW-CONCEPT.md
+/docs/HID-INVENTORY-PROTOTYPE.md
+/docs/MOUSE-WHEEL-ANALYSIS.md
+/docs/qa-assets/

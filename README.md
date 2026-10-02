@@ -1,81 +1,90 @@
-# ScrollFix
+# ScrollFix — Windows-style mouse scrolling for Mac
 
-**Natural trackpad scrolling. Classic mouse-wheel scrolling. One small macOS menu-bar app.**
+**Reverse mouse scroll direction on macOS. Keep your trackpad natural. Middle-click to autoscroll or open a link in a new tab.**
 
-macOS's “Natural scrolling” switch affects both devices. ScrollFix keeps their directions separate without changing that system preference: it reads the baseline, then corrects the device that needs it. The app is open source, runs locally, and has no network or telemetry code.
+ScrollFix is an open-source Mac menu bar app for people who prefer Windows mouse behavior. macOS shares its Natural scrolling setting between mouse and trackpad. ScrollFix corrects recognized mouse-wheel input separately, with immediate wheel movement by default.
 
-[See the 130-line scroll filter](Sources/ScrollFix/ScrollEventEngine.swift) · [How it works](docs/HOW-IT-WORKS.md) · [Deutsch lesen](docs/README.de.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md)
+[Build ScrollFix](#build-and-install) · [Deutsch](docs/README.de.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md)
 
-![ScrollFix active: trackpad natural, mouse wheel classic](docs/screenshots/scrollfix-active.jpg)
+![ScrollFix on macOS: natural trackpad, Windows-style mouse wheel, middle-click scrolling and Direct Windows mode](docs/screenshots/scrollfix-current.png)
 
-<details>
-<summary>More screenshots</summary>
+*Current interface. UI labels are currently German.*
 
-| Status details | Fix off, macOS natural scrolling off |
-| --- | --- |
-| ![Expanded status: macOS baseline, permission, and running filter](docs/screenshots/scrollfix-status.jpg) | ![Fix off: both devices follow macOS and scroll classically](docs/screenshots/scrollfix-off.jpg) |
+## What ScrollFix does
 
-</details>
+- **Separate mouse and trackpad scroll direction:** keep natural trackpad gestures and classic mouse-wheel direction.
+- **Windows-style mouse wheel:** each recognized wheel step moves the page immediately. Adjust the distance if needed.
+- **Middle-click autoscroll:** click the wheel on ordinary content, move the pointer to scroll, then click again to stop.
+- **Middle-click links:** recognized links keep their native click so the browser can open a new tab.
+- **Start at login:** mouse correction, middle-click scrolling and login startup default to on at first launch.
+- **Work locally:** no account, analytics or network communication in the application.
 
-### What is this project?
+ScrollFix currently focuses on mouse behavior. Keyboard remapping, Windows shortcuts and display-quality changes are not included.
 
-[Scroll Reverser](https://github.com/pilotmoon/Scroll-Reverser) is an established, more configurable solution. ScrollFix is a focused Swift/SwiftUI implementation of one outcome: a natural trackpad and a classic mouse wheel, with a visible filter status. Its gesture-based device classification was informed by Scroll Reverser; [provenance and limits](docs/PROVENANCE.md) are documented openly. If this repo is useful to you, you can star it to find it again.
+## Build and install
 
-## Get started
+The current features are available in the source. **The old [v0.1.0 preview](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) does not include them.** It is ad hoc signed, not notarized, and predates the signing changes. No new verified binary release is available yet.
 
-The [v0.1.0 preview release](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) provides a ZIP for **Apple Silicon (arm64)**. Extract it, move `ScrollFix.app` to `/Applications`, and open it. The ZIP's SHA-256 is `443711d46fe664b25fa255d20dcbca01e1537f1c6c3a2959bfbc0a16b64e9731`.
-
-This preview is **ad hoc signed and not Apple-notarized**. macOS may block the downloaded app. Read [Apple's explanation of the warning](https://support.apple.com/en-au/102445) before deciding whether to open it. Building the app from this repository is the transparent alternative; do not disable Gatekeeper globally.
-
-For an Intel Mac or a source build, you need macOS 13 or newer and Swift 6 with the macOS SDK (Xcode Command Line Tools or Xcode):
+Requirements: **macOS 13 or newer**, **Swift 6**, and the macOS SDK from Xcode or Command Line Tools. The build targets the architecture of your Mac; the old preview is Apple Silicon only.
 
 ```sh
 git clone https://github.com/eShok93/ScrollFix.git
 cd ScrollFix
 ./scripts/build-app.sh
-open build/ScrollFix.app
 ```
 
-The script builds `build/ScrollFix.app`, adds the icon, and signs the bundle locally with an ad hoc signature. It does **not** notarize the app. Inspect the source and build script before granting macOS access. Move the app to its permanent location before enabling **Bei Anmeldung starten**.
+Move `build/ScrollFix.app` to `/Applications`, then open it there. Keep the app at that location when using login startup. The script signs local builds ad hoc; it does not notarize them. Rebuilding changes that local identity and may require renewing ScrollFix's macOS permission. Do not disable Gatekeeper globally.
 
 ### First launch
 
-1. Turn on **Fix aktiv** in ScrollFix.
-2. Grant ScrollFix access in **System Settings → Privacy & Security → Accessibility**. On newer macOS versions, the permission page may be named **Device Control and Data Access**. The **macOS-Freigabe** row in ScrollFix opens the relevant page.
-3. Return to ScrollFix. **AKTIV** and **Scrollfilter: Läuft** mean its event tap is running.
-4. Scroll once with each device to confirm the result on your hardware. Enable **Bei Anmeldung starten** if you want the app at every login.
+1. Turn **Natural scrolling on** in macOS Trackpad settings.
+2. Allow ScrollFix in **System Settings → Privacy & Security → Accessibility**, called **Device Control and Data Access** on some newer macOS versions. The app's **Zugriff erlauben** button opens that page.
+3. Return to ScrollFix and check **AKTIV**. Test both the trackpad and mouse wheel once.
 
-The menu-bar icon remains available after the settings window closes. Use **Fix aktiv** to turn the correction on or off. When it is off, both devices follow macOS's shared setting.
+The default wheel mode is **Direkt (Windows)**. **Mausrad**, **Mittelklick-Scrollen** and **Bei Anmeldung starten** are enabled by default; saved choices are respected. macOS may also request permission to generate scroll movement for autoscroll or smooth scrolling. This means movement inside your apps, not sending data to a server.
 
-## What changes?
+## Choose your mouse-wheel feel
 
-| macOS “Natural scrolling” | ScrollFix | Trackpad | Mouse wheel |
-| --- | --- | --- | --- |
-| Off | Off | Classic | Classic |
-| Off | On | **Natural** | **Classic** |
-| On | Off | Natural | Natural |
-| On | On | **Natural** | **Classic** |
+| Mode in the app | Behavior |
+| --- | --- |
+| **macOS** | Keeps the native wheel distance, with ScrollFix's direction correction. |
+| **Direkt (Windows)** | Moves immediately, with an adjustable minimum distance for small wheel steps. Default. |
+| **Weich** | Spreads movement over frames for a soft start and short decay. |
 
-ScrollFix reads the macOS setting about every 1.5 seconds and switches its filter mode when that setting changes. It never writes the setting. The interface shows the current macOS baseline and the expected direction for each device.
+**Feineinstellungen** is expanded by default. **Scrollstrecke pro Radschritt** adjusts the distance. These modes apply to recognized vertical line-wheel input; trackpad gestures, pixel-wheel streams and ambiguous input bypass the wheel-feel stage. Direct mode approximates the immediate feel of Windows, not an exact three-lines-per-notch setting across every app.
 
-## Permissions and trust
+## Middle-click scrolling and browser tabs
 
-ScrollFix uses a Quartz session event tap for scroll-wheel and gesture events. macOS requires a broad system permission for this kind of input filtering. The app processes events in memory and does not write scroll history, send events over the network, or include analytics. Read the precise scope in [Privacy](docs/PRIVACY.md).
+Click the wheel on ordinary content to set an autoscroll anchor. Move the pointer away to scroll vertically or horizontally. Another click stops scrolling.
 
-The preview binary and local builds are **ad hoc signed, not Developer ID signed or notarized**. The build uses a stable bundle identifier (`app.scrollfix.mac`) and designated requirement so local rebuilds can retain their permission identity. A fully verified binary release would need a stable Developer ID signature and Apple notarization.
+On a recognized link, ScrollFix passes the original middle click to the browser. The browser decides whether to open a new tab. Controls, modified clicks and uncertain targets also keep their native behavior. Incomplete Accessibility support or custom canvas content can prevent link recognition or autoscroll. No click is copied or replayed.
 
-## Limits
+## FAQ
 
-- Only vertical scrolling is corrected.
-- The app distinguishes devices using discrete wheel ticks and recent two-finger gestures. Some high-resolution mice, unusual drivers, remote desktops, or fast device switches may be classified incorrectly.
-- A Magic Mouse has a touch surface; its scrolling may differ from a mechanical wheel.
-- Another scrolling utility can modify the same events and conflict with ScrollFix.
-- A green **AKTIV** status confirms that the filter is running. It cannot prove how a specific mouse or trackpad feels; check both devices once.
+### Can I reverse only the mouse wheel on a Mac?
 
-See [Troubleshooting](docs/TROUBLESHOOTING.md) if a direction is still wrong.
+Yes, for recognized wheel input. Leave macOS Natural scrolling on to preserve the trackpad's native direction, then enable ScrollFix's **Mausrad** option. ScrollFix reads the macOS preference without changing it.
 
-## Build, contribute, and license
+### Does ScrollFix work with a Logitech free-spinning wheel?
 
-The application is a Swift package with a SwiftUI interface. Run `./scripts/build-app.sh` from this repository to create the app bundle. [How it works](docs/HOW-IT-WORKS.md) covers the design, and [Contributing](CONTRIBUTING.md) explains how to report device issues.
+Dense, recognized line-wheel input uses a shorter smooth response, and reversing direction cancels the previous tail. ScrollFix does not identify a Logitech model or detect its mechanical wheel mode. Pixel-based driver output can bypass wheel processing. Results depend on the mouse, driver and target app.
 
-Licensed under [Apache 2.0](LICENSE). See [NOTICE](NOTICE) and [Provenance](docs/PROVENANCE.md) for the Scroll Reverser reference.
+### Why does ScrollFix need macOS access?
+
+It must intercept and change scroll movement across apps. Middle-click routing also checks Accessibility roles to preserve link clicks. The app does not subscribe to typed-text events, read page content or transmit events over a network. See the exact scope in [Privacy](docs/PRIVACY.md).
+
+### Is the trackpad guaranteed to stay unchanged?
+
+Device classification is heuristic: Quartz scroll phases and line-wheel events do not provide a documented per-event device identity. Unknown input passes through. High-resolution mice, unusual drivers, remote desktops and rapid device switches can remain ambiguous. Keep Natural scrolling on and test your own devices. Only vertical direction is corrected; another scroll utility can conflict.
+
+## Development and verification
+
+ScrollFix uses Swift and SwiftUI with no external package dependencies. The current offline suite passed **215 tests on 2 October 2026**. Tests cover numeric bounds, event routing, source handoff, permission policy and lifecycle; they do not establish hardware compatibility for every device.
+
+[How it works](docs/HOW-IT-WORKS.md) · [Contributing](CONTRIBUTING.md) · [Release requirements](docs/RELEASING.md)
+
+Local builds are development artifacts. A public binary release requires Developer ID signing, Apple notarization and the release checks described above. Production does not retain QA event histories. A few transient timing values remain in memory; see [Privacy](docs/PRIVACY.md).
+
+## License
+
+[Apache 2.0](LICENSE). License notices are in [NOTICE](NOTICE); technical references are documented in [Provenance](docs/PROVENANCE.md).

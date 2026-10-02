@@ -1,6 +1,6 @@
-name: Device direction issue
-description: Report a mouse or trackpad that ScrollFix classifies incorrectly
-title: "Device direction: "
+name: Scrolling or middle-click issue
+description: Report scroll direction, mouse-wheel feel or middle-click behavior
+title: "Scrolling: "
 labels: [bug]
 body:
   - type: markdown
@@ -31,8 +31,8 @@ body:
   - type: textarea
     id: behavior
     attributes:
-      label: Expected and actual direction
-      description: Include the app status and what happens with Fix on and off.
+      label: Expected and actual behavior
+      description: Include the target app, wheel mode, ScrollFix status and what happens with Mausrad or Mittelklick-Scrollen on and off.
     validations:
       required: true
   - type: textarea

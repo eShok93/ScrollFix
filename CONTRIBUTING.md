@@ -14,13 +14,15 @@ Open an issue with:
 - mouse and trackpad models and connection types;
 - the macOS “Natural scrolling” value;
 - ScrollFix status and the direction shown for each device;
-- actual direction for each device, with Fix on and off;
+- actual direction for each device, with Mausrad on and off;
 - any other scroll utility or mouse driver in use.
 
 Please avoid screenshots of other applications, private input logs, serial numbers, or account information. A screenshot of the ScrollFix window alone is usually enough.
 
 ## Code changes
 
-Keep the event-tap callback small and local. Avoid disk or network work in the scroll path. If a change affects device classification, describe which hardware and event pattern it addresses. Update the direction table and limitations when behavior changes. Include source attribution when adapting external code or algorithms; see [Provenance](docs/PROVENANCE.md).
+Keep the event-tap callback small and local. Avoid disk or network work in the scroll path. If a change affects device classification, describe which hardware and event pattern it addresses. Update the setup guidance and limitations when behavior changes. Include source attribution when adapting external code or algorithms; see [Provenance](docs/PROVENANCE.md).
+
+Use `swift test --disable-sandbox` on a Mac with Swift 6 and XCTest available for offline regression checks. These tests check code paths, not physical hardware behavior. Test real middle-button behavior, rapid device handoffs, reconnect, and sleep/wake on hardware before making a release.
 
 By contributing, you agree that your contribution is licensed under the repository's [Apache 2.0 license](LICENSE).

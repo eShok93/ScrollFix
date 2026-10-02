@@ -1,56 +1,86 @@
-# ScrollFix
+# ScrollFix — Mausrad wie unter Windows, auf deinem Mac
 
-**Trackpad natürlich. Mausrad klassisch.** macOS koppelt „Natürliches Scrollen“ für beide Geräte. ScrollFix ist eine kleine Menüleisten-App, die ihre Scrollrichtungen trennt. Sie liest die gemeinsame macOS-Einstellung und korrigiert je nach Ausgangslage das passende Gerät. Die Systemeinstellung selbst bleibt unverändert.
+**Maus-Scrollrichtung auf dem Mac ändern. Trackpad natürlich lassen. Mit dem Mausrad scrollen oder Links in einem neuen Tab öffnen.**
 
-[Scrollfilter im Quellcode](../Sources/ScrollFix/ScrollEventEngine.swift) · [English README](../README.md) · [Technik](HOW-IT-WORKS.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
+ScrollFix ist eine Open-Source-App für die macOS-Menüleiste. Sie richtet sich an alle, die das Mausverhalten von Windows bevorzugen. macOS verwendet dieselbe Einstellung für Maus und Trackpad. ScrollFix korrigiert erkannte Mausradbewegungen getrennt und bewegt die Seite standardmäßig sofort.
 
-![ScrollFix aktiv: Trackpad natürlich und Mausrad klassisch](screenshots/scrollfix-active.jpg)
+[Installieren](#bauen-und-installieren) · [English](../README.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
 
-Weitere Ansichten: [Statusdetails](screenshots/scrollfix-status.jpg) · [Fix aus](screenshots/scrollfix-off.jpg)
+![ScrollFix auf dem Mac: natürliches Trackpad, Windows-Mausrad, Mittelklick-Scrollen und Direkt-Modus](screenshots/scrollfix-current.png)
 
-[Scroll Reverser](https://github.com/pilotmoon/Scroll-Reverser) ist eine etablierte Lösung mit mehr Einstellmöglichkeiten. ScrollFix konzentriert sich auf ein Ergebnis und zeigt den Filterzustand direkt an. Die Geräteerkennung ist von Scroll Reverser inspiriert; [Herkunft und Grenzen](PROVENANCE.md) sind dokumentiert. Wenn dir das Repo nützt, kannst du es mit einem Star für später speichern.
+## Was die App kann
 
-## Installieren
+- **Maus und Trackpad getrennt scrollen:** Trackpad natürlich, Mausrad klassisch.
+- **Mausrad wie unter Windows:** Jeder erkannte Radschritt bewegt die Seite sofort. Die Strecke lässt sich anpassen.
+- **Mittelklick-Scrollen:** Auf eine freie Fläche klicken, den Zeiger bewegen und zum Stoppen erneut klicken.
+- **Links per Mittelklick öffnen:** Erkannte Links behalten den ursprünglichen Klick. Der Browser kann sie in einem neuen Tab öffnen.
+- **Bei Anmeldung starten:** Mausrad, Mittelklick-Scrollen und Autostart sind bei der ersten Einrichtung aktiviert.
+- **Lokal arbeiten:** Kein Konto, keine Analyse-Software und keine Netzwerkkommunikation in der App.
 
-Der [Vorschau-Release v0.1.0](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) enthält einen ZIP-Download für **Apple Silicon (arm64)**. Entpacke ihn, verschiebe `ScrollFix.app` nach `/Applications` und öffne sie. SHA-256 der ZIP-Datei: `443711d46fe664b25fa255d20dcbca01e1537f1c6c3a2959bfbc0a16b64e9731`.
+ScrollFix konzentriert sich derzeit auf das Mausverhalten. Tastaturbelegung, Windows-Kürzel und Änderungen der Displayqualität gehören nicht zum Funktionsumfang.
 
-Die Vorschau ist **ad hoc signiert und nicht von Apple notarisiert**. macOS kann den Download deshalb blockieren. Lies [Apples Erklärung der Warnung](https://support.apple.com/de-de/102445), bevor du entscheidest, ob du die App öffnen möchtest. Du musst Gatekeeper dafür nicht global deaktivieren.
+## Bauen und installieren
 
-Für einen Intel-Mac oder wenn du selbst bauen möchtest, brauchst du macOS 13 oder neuer und Swift 6 mit macOS SDK (Xcode Command Line Tools oder Xcode):
+Die aktuellen Funktionen sind im Quellcode verfügbar. **Die alte [Preview v0.1.0](https://github.com/eShok93/ScrollFix/releases/tag/v0.1.0) enthält sie nicht.** Sie ist lokal signiert, nicht notarisiert und stammt aus der Zeit vor den Signaturkorrekturen. Ein neuer verifizierter Binärdownload ist noch nicht verfügbar.
+
+Du brauchst **macOS 13 oder neuer**, **Swift 6** und das macOS SDK aus Xcode oder den Command Line Tools. Der Build passt zur Architektur deines Macs; die alte Preview unterstützt nur Apple Silicon.
 
 ```sh
 git clone https://github.com/eShok93/ScrollFix.git
 cd ScrollFix
 ./scripts/build-app.sh
-open build/ScrollFix.app
 ```
 
-Das Skript erzeugt `build/ScrollFix.app` und signiert sie lokal ad hoc. Verschiebe die App vor dem Aktivieren von **Bei Anmeldung starten** an ihren dauerhaften Ort.
+Verschiebe `build/ScrollFix.app` nach `/Applications` und öffne sie dort. Lass sie für den Autostart an diesem Ort. Der Build wird ad hoc signiert und nicht notarisiert. Nach einem Neubau musst du die macOS-Freigabe möglicherweise erneuern. Gatekeeper nicht global ausschalten.
 
-## Erster Start
+### Erste Einrichtung
 
-1. Schalte **Fix aktiv** ein.
-2. Erlaube ScrollFix unter **Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen**. Auf neueren macOS-Versionen heißt die Seite **Gerätesteuerung und Datenzugriff**. Die Zeile **macOS-Freigabe** in der App öffnet sie direkt.
-3. Wechsle zu ScrollFix zurück. **AKTIV** und **Scrollfilter: Läuft** bedeuten, dass der Ereignisfilter läuft.
-4. Prüfe die Richtung einmal mit Trackpad und Mausrad. Schalte danach bei Bedarf **Bei Anmeldung starten** ein.
+1. Aktiviere **Natürliches Scrollen** in den macOS-Trackpad-Einstellungen.
+2. Erlaube ScrollFix unter **Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen**. Auf neueren macOS-Versionen heißt der Bereich gegebenenfalls **Gerätesteuerung und Datenzugriff**. **Zugriff erlauben** in der App öffnet die passende Seite.
+3. Kehre zurück und prüfe **AKTIV**. Teste Trackpad und Mausrad einmal.
 
-Das Menüleistensymbol bleibt erreichbar, wenn du das Fenster schließt. Bei **Fix aus** folgen beide Geräte der gemeinsamen macOS-Einstellung.
+**Direkt (Windows)** ist vorausgewählt. **Mausrad**, **Mittelklick-Scrollen** und **Bei Anmeldung starten** sind standardmäßig an; gespeicherte Entscheidungen bleiben erhalten. Für Mittelklick-Scrollen oder weiche Bewegung kann macOS zusätzlich erlauben müssen, dass die App Scrollbewegungen auslöst. Gemeint ist Bewegung in deinen Apps, keine Datenübertragung an einen Server.
 
-## Was macht der Schalter?
+## Mausrad einstellen
 
-| macOS „Natürliches Scrollen“ | ScrollFix | Trackpad | Mausrad |
-| --- | --- | --- | --- |
-| Aus | Aus | Klassisch | Klassisch |
-| Aus | An | **Natürlich** | **Klassisch** |
-| An | Aus | Natürlich | Natürlich |
-| An | An | **Natürlich** | **Klassisch** |
+| Einstellung | Verhalten |
+| --- | --- |
+| **macOS** | Behält die native Scrollstrecke bei; ScrollFix korrigiert die Richtung. |
+| **Direkt (Windows)** | Bewegt die Seite sofort, mit einstellbarer Mindeststrecke für kleine Radschritte. Standard. |
+| **Weich** | Verteilt die Bewegung über mehrere Bilder, mit weichem Anlauf und kurzem Nachlauf. |
 
-ScrollFix liest die macOS-Grundeinstellung etwa alle 1,5 Sekunden neu. Im ausgeklappten Status siehst du diese Grundeinstellung, die Freigabe und den Filterzustand.
+**Feineinstellungen** sind standardmäßig aufgeklappt. Mit **Scrollstrecke pro Radschritt** passt du die Strecke an. Die Einstellungen gelten für erkannte vertikale Zeilenimpulse. Trackpad-Gesten, Pixel-Mausradbewegungen und unklare Eingaben umgehen diese Stufe. Direkt entspricht dem unmittelbaren Windows-Gefühl, nicht einer exakten Drei-Zeilen-Einstellung in jeder App.
 
-## Berechtigung und Grenzen
+## Häufige Fragen
 
-macOS verlangt für einen systemweiten Ereignisfilter eine weitreichende Freigabe. ScrollFix verarbeitet Scroll- und Gestenereignisse nur lokal im Arbeitsspeicher. Es gibt keinen Netzwerkcode, keine Telemetrie und kein Scrollprotokoll. Details stehen unter [Datenschutz](PRIVACY.md).
+### Kann ich nur die Scrollrichtung der Maus ändern?
 
-Die App korrigiert nur vertikales Scrollen. Hochauflösende Mausräder, ungewöhnliche Treiber, Remote-Desktop-Software und andere Scroll-Tools können die Geräteerkennung beeinflussen. **AKTIV** bestätigt den laufenden Filter, nicht das Gefühl an deiner konkreten Hardware. Siehe [Probleme lösen](TROUBLESHOOTING.md).
+Für erkannte Mausradbewegungen ja. Lass **Natürliches Scrollen** in macOS an und aktiviere **Mausrad** in ScrollFix. Die App liest die Systemeinstellung, verändert sie aber nicht.
 
-Der Vorschau-Download und lokale Builds sind **nicht von Apple notarisiert**. Eine vollständig verifizierte Binärveröffentlichung braucht eine Developer-ID-Signatur und Notarisierung. Der Quellcode steht unter [Apache 2.0](../LICENSE); Hinweise zur Vorlage stehen in [NOTICE](../NOTICE) und [Provenance](PROVENANCE.md).
+### Öffnet ein Klick auf das Mausrad einen neuen Tab?
+
+Auf erkannten Links reicht ScrollFix den ursprünglichen Mittelklick an den Browser weiter. Dieser entscheidet, wie er den Link öffnet. Auf normalen Inhalten startet der Klick Autoscroll. Unklare Ziele und Bedienelemente behalten ihr natives Verhalten; unvollständige Bedienungshilfen können die Erkennung begrenzen.
+
+### Funktioniert das mit einem Logitech-Freilaufrad?
+
+Dichte, erkannte Zeilenimpulse erhalten im weichen Modus eine kürzere Antwort; Gegensteuern bricht den bisherigen Nachlauf ab. ScrollFix erkennt weder das Logitech-Modell noch den mechanischen Freilaufmodus. Pixelbasierte Treiber-Ausgaben können die Verarbeitung umgehen. Teste dein Gerät in den Apps, die du verwendest.
+
+### Was passiert mit meinen Eingaben?
+
+Die Verarbeitung läuft auf deinem Mac. Die App liest keine getippten Texte und keine Seiteninhalte. Sie überträgt keine Ereignisse übers Netzwerk. Der genaue Umfang steht im [Datenschutz-Dokument](PRIVACY.md).
+
+### Gibt es Grenzen bei der Geräteerkennung?
+
+Ja. Scrollphasen liefern keine eindeutige Gerätekennung pro Ereignis. Unbekannte Eingaben bleiben unverändert; präzise Mäuse, besondere Treiber, Remote-Desktops und schnelle Gerätewechsel können mehrdeutig sein. Deshalb Natürliches Scrollen anlassen und beide Geräte testen. Die Richtungskorrektur betrifft nur die vertikale Achse. Andere Scroll-Apps können stören.
+
+## Qualität und Entwicklung
+
+Swift und SwiftUI, ohne externe Paketabhängigkeiten. **215 Offline-Tests bestanden am 2. Oktober 2026.** Das bestätigt geprüfte Codepfade, keine universelle Hardwarekompatibilität.
+
+[Technik](HOW-IT-WORKS.md) · [Mitwirken](../CONTRIBUTING.md) · [Release-Anforderungen](RELEASING.md)
+
+Lokale Builds sind Entwicklungsartefakte. Ein öffentlicher Binärrelease braucht Developer ID, Apple-Notarisierung und die dokumentierte Release-Prüfung. Die Produktionsversion behält keine QA-Ereignisverläufe. Einige flüchtige Zeitwerte liegen im Arbeitsspeicher; siehe [Datenschutz](PRIVACY.md).
+
+## Lizenz
+
+[Apache 2.0](../LICENSE). Lizenzhinweise stehen in [NOTICE](../NOTICE), technische Referenzen in [Herkunft](PROVENANCE.md).

@@ -1,8 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="ScrollFix icon">
   <defs>
-    <linearGradient id="bg" x1="130" y1="90" x2="870" y2="940" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#142944"/><stop offset="1" stop-color="#09121f"/>
-    </linearGradient>
     <linearGradient id="up" x1="314" y1="255" x2="415" y2="685" gradientUnits="userSpaceOnUse">
       <stop stop-color="#9CE7FF"/><stop offset="1" stop-color="#42BDF4"/>
     </linearGradient>
@@ -13,7 +10,7 @@
       <feGaussianBlur stdDeviation="18"/>
     </filter>
   </defs>
-  <rect x="24" y="24" width="976" height="976" rx="232" fill="url(#bg)"/>
+  <rect x="24" y="24" width="976" height="976" rx="232" fill="#112139"/>
   <rect x="25" y="25" width="974" height="974" rx="231" stroke="#FFFFFF" stroke-opacity=".09" stroke-width="2"/>
   <path d="M335 703V343m0 0-91 91m91-91 91 91" stroke="#5BC8F8" stroke-width="70" stroke-linecap="round" stroke-linejoin="round" opacity=".35" filter="url(#glow)"/>
   <path d="M689 321v360m0 0-91-91m91 91 91-91" stroke="#718FFF" stroke-width="70" stroke-linecap="round" stroke-linejoin="round" opacity=".28" filter="url(#glow)"/>
