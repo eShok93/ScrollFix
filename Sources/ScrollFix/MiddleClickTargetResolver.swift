@@ -11,7 +11,7 @@ enum MiddleClickTarget: Equatable, Sendable {
 /// The bounded walk is shared by the public AX adapter and offline fixtures.
 /// Reads only roles/parents; an incomplete or slow answer preserves native input.
 enum MiddleClickTargetProbe {
-    static let maximumDepth = 8
+    static let maximumDepth = 24
     static let budgetNanoseconds: UInt64 = 30_000_000
 
     static func resolve<Node>(
@@ -54,7 +54,6 @@ enum MiddleClickTargetProbe {
 
 /// Created outside the event callback after autoscroll access is available.
 /// AX messaging has a short per-call timeout plus a total best-effort deadline.
-@MainActor
 final class MiddleClickTargetResolver {
     private let systemWide = AXUIElementCreateSystemWide()
     private let boundedMessaging: Bool

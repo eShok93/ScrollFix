@@ -57,20 +57,20 @@ final class MiddleClickTargetProbeTests: XCTestCase {
         XCTAssertEqual(probe(["AXImage"]), .unknown)
     }
 
-    func testCyclicParentIsBoundedToEightRoleReads() {
+    func testCyclicParentIsBoundedToConfiguredRoleLimit() {
         var roleReads = 0
         var parentReads = 0
         let target = MiddleClickTargetProbe.resolve(hitTest: { 1 }, isOwnElement: { _ in false },
             readRole: { _ in roleReads += 1; return "AXGroup" },
             readParent: { _ in parentReads += 1; return 1 }, now: { 0 })
         XCTAssertEqual(target, .unknown)
-        XCTAssertEqual(roleReads, 8)
-        XCTAssertEqual(parentReads, 7)
+        XCTAssertEqual(roleReads, MiddleClickTargetProbe.maximumDepth)
+        XCTAssertEqual(parentReads, MiddleClickTargetProbe.maximumDepth - 1)
     }
 
     func testLinkWithinLimitIsFoundAndBeyondLimitIsNotGuessed() {
-        XCTAssertEqual(probe(Array(repeating: "AXGroup", count: 7) + ["AXLink"]), .link)
-        XCTAssertEqual(probe(Array(repeating: "AXGroup", count: 8) + ["AXLink"]), .unknown)
+        XCTAssertEqual(probe(Array(repeating: "AXGroup", count: MiddleClickTargetProbe.maximumDepth - 1) + ["AXLink"]), .link)
+        XCTAssertEqual(probe(Array(repeating: "AXGroup", count: MiddleClickTargetProbe.maximumDepth) + ["AXLink"]), .unknown)
     }
 
     func testSlowHitDoesNotTriggerRoleReads() {

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Run the middle-click event tap, bounded Accessibility lookup and release recovery independently of the SwiftUI thread. Keep in-flight clicks through timeout recovery and preserve native links.
+- Extend bounded link/control ancestry checks to 24 elements, and require sustained physical release before cleaning up a missing button-up.
+
 - Enable launch at login, mouse-wheel correction in Direct mode, and middle-click autoscroll by default on first launch; preserve explicit saved choices.
 - Preserve native browser behavior when a middle click targets a link, while keeping autoscroll on ordinary content.
 - Keep detailed source, wheel and timing traces in QA builds; production shows user-facing system and permission status only.

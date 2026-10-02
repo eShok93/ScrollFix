@@ -154,8 +154,8 @@ cat > "$CONTENTS/Info.plist" <<PLIST
   <key>CFBundleName</key><string>ScrollFix</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
-  <key>CFBundleShortVersionString</key><string>0.2.0</string>
-  <key>CFBundleVersion</key><string>2</string>
+  <key>CFBundleShortVersionString</key><string>0.2.1</string>
+  <key>CFBundleVersion</key><string>3</string>
   <key>LSMinimumSystemVersion</key><string>13.0</string>
   <key>LSUIElement</key><true/>
   <key>ScrollFixBuildKind</key><string>$BUILD_KIND</string>

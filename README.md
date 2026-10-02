@@ -57,7 +57,7 @@ The default wheel mode is **Direkt (Windows)**. **Mausrad**, **Mittelklick-Scrol
 
 Click the wheel on ordinary content to set an autoscroll anchor. Move the pointer away to scroll vertically or horizontally. Another click stops scrolling.
 
-On a recognized link, ScrollFix passes the original middle click to the browser. The browser decides whether to open a new tab. Controls, modified clicks and uncertain targets also keep their native behavior. Incomplete Accessibility support or custom canvas content can prevent link recognition or autoscroll. No click is copied or replayed.
+On a recognized link, ScrollFix passes the original middle click to the browser. The browser decides whether to open a new tab. Controls, modified clicks and uncertain targets also keep their native behavior. Incomplete Accessibility support or custom canvas content can prevent link recognition or autoscroll. No click is copied or replayed. The middle-click filter now runs independently of the interface, with recovery for interrupted clicks and a bounded lookup for deeply nested links.
 
 ## FAQ
 

@@ -59,385 +59,112 @@ struct AutoScrollDiagnostics {
 /// the regular scroll-direction filter keeps working if autoscroll is off.
 @MainActor
 final class AutoScrollController {
-    private var eventTap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
+    private var worker: MiddleClickTapWorker?
     private var timer: DispatchSourceTimer?
-    private var releaseWatchdog: DispatchSourceTimer?
-    private var indicator = AutoScrollIndicator()
+    private let indicator = AutoScrollIndicator()
     private var physics = AutoScrollPhysics()
     private var scrollEventSource: CGEventSource?
     private var anchor: CGPoint?
-    private var pendingAnchor: CGPoint?
-    private var middleClick = MiddleClickRouting()
-    private var middleClickResolver: MiddleClickTargetResolver?
-    private var shouldStartOnRelease = false
-    private var stopAfterMiddleUp = false
-    private var desiredEnabled = false
-    private(set) var isPausedByUserInput = false
     private var wantsScrolling = false
-    private var actionGeneration: UInt64 = 0
-    private var tapGeneration: UInt64 = 0
-    private var captureGeneration: UInt64 = 0
+    private var desiredEnabled = false
+    private var generation: UInt64 = 0
+    private var lastSequence: UInt64 = 0
     private var lastTickAt: UInt64?
-    private var releaseDeadline: UInt64?
-    private var forcedReleaseDeadline: UInt64?
-    private var sawPhysicalMiddleDown = false
-    private(set) var diagnostics = AutoScrollDiagnostics()
-
     private let collectDiagnostics: Bool
+    private(set) var diagnostics = AutoScrollDiagnostics()
+    private(set) var isRunning = false
+    private(set) var isPausedByUserInput = false
+    var isScrolling: Bool { anchor != nil }
+    var onInteraction: (@MainActor () -> Void)?
 
     init(collectDiagnostics: Bool = false) {
         self.collectDiagnostics = collectDiagnostics
-        // The event source is created only by start(), after access is granted.
-        // Constructing it while the feature is off can cache a denied result.
     }
 
-    /// Cancels the independent wheel tail before middle-button capture can swallow a click.
-    var onInteraction: (@MainActor () -> Void)?
+    deinit { worker?.shutdown() }
 
-    var isRunning: Bool {
-        guard let eventTap else { return false }
-        return CFMachPortIsValid(eventTap) && CGEvent.tapIsEnabled(tap: eventTap)
+    private func prepareWorker() {
+        guard worker == nil else { return }
+        worker = MiddleClickTapWorker(collectDiagnostics: collectDiagnostics) { [weak self] snapshot in
+            DispatchQueue.main.async { [weak self] in self?.receive(snapshot) }
+        }
     }
 
-    var isScrolling: Bool { anchor != nil }
+    private func receive(_ snapshot: MiddleClickTapWorker.Snapshot) {
+        guard snapshot.generation == generation, snapshot.sequence > lastSequence else { return }
+        lastSequence = snapshot.sequence
+        isRunning = snapshot.running
+        isPausedByUserInput = snapshot.paused
+        if snapshot.interaction { onInteraction?() }
+        if let target = snapshot.target, let milliseconds = snapshot.lookupMilliseconds {
+            diagnostics.recordMiddleClick(target: target, milliseconds: milliseconds)
+        }
+        switch snapshot.action {
+        case .unchanged: break
+        case .stop: stopScrolling()
+        case .start(let point):
+            guard desiredEnabled, snapshot.running else { stopScrolling(); return }
+            wantsScrolling = true
+            startScrolling(at: point)
+        }
+    }
 
     func start() {
-        desiredEnabled = true
-        guard !isPausedByUserInput else { return }
+        if !desiredEnabled {
+            desiredEnabled = true
+            generation &+= 1
+        }
         if scrollEventSource == nil {
             scrollEventSource = CGEventSource(stateID: .combinedSessionState)
+            scrollEventSource?.localEventsSuppressionInterval = 0
         }
-        guard let scrollEventSource else { return }
-        scrollEventSource.localEventsSuppressionInterval = 0
-        if middleClickResolver == nil { middleClickResolver = MiddleClickTargetResolver() }
-        if stopAfterMiddleUp {
-            if middleClick.isCapturing && isRunning { return }
-            tearDown()
-        }
-        if isRunning { return }
-        if let eventTap {
-            if CFMachPortIsValid(eventTap) {
-                CGEvent.tapEnable(tap: eventTap, enable: true)
-                if isRunning { return }
-            }
-            // stop() may preserve a captured down/up pair. A failed tap cannot
-            // preserve that pair, and must be removed before creating another.
-            tearDown()
-        }
-
-        let types: [CGEventType] = [.otherMouseDown, .otherMouseUp, .otherMouseDragged, .leftMouseDown, .rightMouseDown]
-        let mask = types.reduce(CGEventMask(0)) { $0 | (CGEventMask(1) << $1.rawValue) }
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .defaultTap,
-            eventsOfInterest: mask,
-            callback: Self.receive,
-            userInfo: Unmanaged.passUnretained(self).toOpaque()
-        ) else { return }
-
-        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        eventTap = tap
-        runLoopSource = source
-        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
-        CGEvent.tapEnable(tap: tap, enable: true)
-        if !isRunning { stop() }
-    }
-
-    func rebuild(enabled: Bool) {
-        // A session transition can lose a button-up event. Force a clean tap
-        // and state before rebuilding rather than carrying a stale capture.
-        actionGeneration &+= 1
-        desiredEnabled = enabled
-        tearDown()
-        if enabled { start() }
+        guard scrollEventSource != nil else { return }
+        prepareWorker()
+        worker?.configure(enabled: true, generation: generation)
     }
 
     func stop() {
-        desiredEnabled = false
-        actionGeneration &+= 1
-        wantsScrolling = false
+        if desiredEnabled {
+            desiredEnabled = false
+            generation &+= 1
+        }
         stopScrolling()
-        shouldStartOnRelease = false
-        pendingAnchor = nil
-        if isPausedByUserInput {
-            tearDown()
-            return
-        }
-        // Keep the tap alive for the matching up after a consumed down, even if
-        // the feature was switched off. The watchdog bounds a lost release.
-        if middleClick.isCapturing, let eventTap, CFMachPortIsValid(eventTap) {
-            CGEvent.tapEnable(tap: eventTap, enable: true)
-        }
-        if middleClick.isCapturing && isRunning {
-            stopAfterMiddleUp = true
-            startReleaseWatchdog()
-            return
-        }
-        tearDown()
+        isRunning = false
+        worker?.configure(enabled: false, generation: generation)
     }
 
-    private func tearDown() {
-        tapGeneration &+= 1
-        captureGeneration &+= 1
+    func rebuild(enabled: Bool) {
+        generation &+= 1
+        desiredEnabled = enabled
         stopScrolling()
-        cancelReleaseWatchdog()
-        middleClick.resetAfterTapRemoval()
-        shouldStartOnRelease = false
-        pendingAnchor = nil
-        stopAfterMiddleUp = false
-        if let runLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
-        }
-        if let eventTap {
-            CGEvent.tapEnable(tap: eventTap, enable: false)
-            CFMachPortInvalidate(eventTap)
-        }
-        runLoopSource = nil
-        eventTap = nil
-    }
-
-    private func startReleaseWatchdog() {
-        guard releaseWatchdog == nil else { return }
-        let now = DispatchTime.now().uptimeNanoseconds
-        releaseDeadline = now &+ 4_000_000_000
-        forcedReleaseDeadline = now &+ 30_000_000_000
-        sawPhysicalMiddleDown = false
-        let source = DispatchSource.makeTimerSource(queue: .main)
-        source.schedule(deadline: .now() + .milliseconds(100), repeating: .milliseconds(100), leeway: .milliseconds(20))
-        source.setEventHandler { [weak self] in self?.checkPendingRelease() }
-        releaseWatchdog = source
-        source.resume()
-    }
-
-    private func deferStartReleaseWatchdog() {
-        let tap = tapGeneration
-        let capture = captureGeneration
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.tapGeneration == tap,
-                  self.captureGeneration == capture, self.middleClick.isCapturing else { return }
-            self.startReleaseWatchdog()
-        }
-    }
-
-    private func cancelReleaseWatchdog() {
-        releaseWatchdog?.cancel()
-        releaseWatchdog = nil
-        releaseDeadline = nil
-        forcedReleaseDeadline = nil
-        sawPhysicalMiddleDown = false
-    }
-
-    private func checkPendingRelease() {
-        guard middleClick.isCapturing else {
-            cancelReleaseWatchdog()
-            return
-        }
-        let physicalDown = CGEventSource.buttonState(.hidSystemState, button: .center)
-            || CGEventSource.buttonState(.combinedSessionState, button: .center)
-        if physicalDown { sawPhysicalMiddleDown = true }
-        let now = DispatchTime.now().uptimeNanoseconds
-        let expired = releaseDeadline.map { now >= $0 } ?? true
-        let forceExpired = forcedReleaseDeadline.map { now >= $0 } ?? true
-        if (!physicalDown && (sawPhysicalMiddleDown || expired)) || forceExpired {
-            if stopAfterMiddleUp {
-                // The matching up was not observed by this tap. If the feature
-                // was re-enabled meanwhile, the replacement tap must swallow a
-                // late up instead of delivering an orphan release to the app.
-                finishPendingStop(dropLateMiddleUp: true)
-            } else {
-                // A device unplug or lost button-up must not poison the next
-                // middle click. Do not start scrolling without a real release.
-                actionGeneration &+= 1
-                captureGeneration &+= 1
-                middleClick.expireCapturedRelease()
-                shouldStartOnRelease = false
-                pendingAnchor = nil
-                stopScrolling()
-                cancelReleaseWatchdog()
+        isRunning = false
+        if enabled {
+            if scrollEventSource == nil {
+                scrollEventSource = CGEventSource(stateID: .combinedSessionState)
+                scrollEventSource?.localEventsSuppressionInterval = 0
             }
+            guard scrollEventSource != nil else { return }
+            prepareWorker()
         }
+        worker?.configure(enabled: enabled, generation: generation, rebuild: true)
     }
 
     func resumeAfterUserInputDisable() {
-        guard isPausedByUserInput else { return }
-        actionGeneration &+= 1
-        tearDown()
-        isPausedByUserInput = false
-    }
-
-    private func finishPendingStop(dropLateMiddleUp: Bool = false) {
-        guard stopAfterMiddleUp else { return }
-        let restart = desiredEnabled && !isPausedByUserInput
-        tearDown()
-        if restart {
-            middleClick.resetAfterTapRemoval(dropLateCapturedUp: dropLateMiddleUp)
-            start()
-        }
-    }
-
-    private static let receive: CGEventTapCallBack = { _, type, event, userInfo in
-        guard let userInfo else { return Unmanaged.passUnretained(event) }
-        let controller = Unmanaged<AutoScrollController>.fromOpaque(userInfo).takeUnretainedValue()
-        return MainActor.assumeIsolated {
-            controller.handle(type: type, event: event)
-        }
-    }
-
-    private func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        if type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown {
-            onInteraction?()
-        }
-        if type == .tapDisabledByUserInput {
-            isPausedByUserInput = true
-            actionGeneration &+= 1
-            let generation = actionGeneration
-            DispatchQueue.main.async { [weak self] in
-                guard let self, self.actionGeneration == generation else { return }
-                self.tearDown()
-            }
-            return nil
-        }
-        if type == .tapDisabledByTimeout {
-            deferStopScrolling()
-            shouldStartOnRelease = false
-            if let eventTap, desiredEnabled || stopAfterMiddleUp {
-                CGEvent.tapEnable(tap: eventTap, enable: true)
-            }
-            return nil
-        }
-
-        if type == .otherMouseDown || type == .otherMouseUp || type == .otherMouseDragged {
-            let button = event.getIntegerValueField(.mouseEventButtonNumber)
-            if button == 2 {
-                if type == .otherMouseDragged {
-                    return middleClick.dragRoute == .captured ? nil : Unmanaged.passUnretained(event)
-                }
-                if type == .otherMouseDown {
-                    // Never reclassify an open pair because its pointer moved,
-                    // its modifiers changed, or a duplicate down was delivered.
-                    if let route = middleClick.heldRoute {
-                        return route == .captured ? nil : Unmanaged.passUnretained(event)
-                    }
-                    if stopAfterMiddleUp {
-                        _ = middleClick.down { .native }
-                        return Unmanaged.passUnretained(event)
-                    }
-                    // Keep the anchor at the original down even if AX takes
-                    // time and the physical pointer has already moved.
-                    let clickLocation = event.location
-                    let clickAnchor = MiddleClickRouting.appKitAnchor(
-                        from: clickLocation, primaryDisplayHeight: CGDisplayBounds(CGMainDisplayID()).height
-                    )
-                    let lookupStart = DispatchTime.now().uptimeNanoseconds
-                    let target: MiddleClickTarget
-                    if MiddleClickRouting.preservesNativeModifiers(event.flags) {
-                        target = .nativeControl
-                    } else if clickAnchor == nil {
-                        target = .unknown
-                    } else {
-                        target = middleClickResolver?.target(at: clickLocation) ?? .unknown
-                    }
-                    if collectDiagnostics {
-                        let elapsed = Double(DispatchTime.now().uptimeNanoseconds &- lookupStart) / 1_000_000
-                        diagnostics.recordMiddleClick(target: target, milliseconds: elapsed)
-                    }
-                    let route = middleClick.down { target.route }
-                    if route == .native {
-                        // Stop before the native link/control action; no synthetic
-                        // button events, command-clicks or buffered replay.
-                        deferStopScrolling()
-                        shouldStartOnRelease = false
-                        pendingAnchor = nil
-                        return Unmanaged.passUnretained(event)
-                    }
-                    captureGeneration &+= 1
-                    deferStartReleaseWatchdog()
-                    pendingAnchor = clickAnchor
-                    if wantsScrolling {
-                        deferStopScrolling()
-                        shouldStartOnRelease = false
-                    } else {
-                        shouldStartOnRelease = true
-                    }
-                } else {
-                    let wasCaptured = middleClick.isCapturing
-                    let route = middleClick.up()
-                    if !wasCaptured {
-                        return route == .captured ? nil : Unmanaged.passUnretained(event)
-                    }
-                    captureGeneration &+= 1
-                    cancelReleaseWatchdog()
-                    if stopAfterMiddleUp {
-                        shouldStartOnRelease = false
-                        pendingAnchor = nil
-                        let generation = tapGeneration
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self, self.tapGeneration == generation else { return }
-                            self.finishPendingStop()
-                        }
-                    } else if shouldStartOnRelease, let pendingAnchor {
-                        shouldStartOnRelease = false
-                        self.pendingAnchor = nil
-                        deferStartScrolling(at: pendingAnchor)
-                    } else {
-                        pendingAnchor = nil
-                    }
-                }
-                return nil
-            }
-            if type == .otherMouseDown {
-                deferStopScrolling()
-                shouldStartOnRelease = false
-            }
-        } else if type == .leftMouseDown || type == .rightMouseDown {
-            deferStopScrolling()
-            shouldStartOnRelease = false
-        }
-        return Unmanaged.passUnretained(event)
-    }
-
-    // Keep AppKit panel work and timer creation outside the synchronous tap
-    // callback. Generation checks prevent stale queued actions from reviving it.
-    private func deferStartScrolling(at point: CGPoint) {
-        actionGeneration &+= 1
-        let generation = actionGeneration
-        wantsScrolling = true
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.actionGeneration == generation, self.wantsScrolling else { return }
-            self.startScrolling(at: point)
-        }
-    }
-
-    private func deferStopScrolling() {
-        actionGeneration &+= 1
-        let generation = actionGeneration
-        wantsScrolling = false
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.actionGeneration == generation else { return }
-            self.stopScrolling()
-        }
+        worker?.resume()
     }
 
     private func startScrolling(at point: CGPoint) {
-        guard isRunning else {
-            stopScrolling()
-            return
-        }
+        guard isRunning else { stopScrolling(); return }
         timer?.cancel()
-        timer = nil
         anchor = point
         physics.reset()
         if collectDiagnostics { diagnostics.resetScrollMetrics() }
         indicator.show(at: point)
         lastTickAt = DispatchTime.now().uptimeNanoseconds
         let source = DispatchSource.makeTimerSource(queue: .main)
-        source.schedule(
-            deadline: .now() + .milliseconds(AutoScrollPhysics.tickIntervalMilliseconds),
-            repeating: .milliseconds(AutoScrollPhysics.tickIntervalMilliseconds),
-            leeway: .milliseconds(1)
-        )
+        source.schedule(deadline: .now() + .milliseconds(AutoScrollPhysics.tickIntervalMilliseconds),
+                        repeating: .milliseconds(AutoScrollPhysics.tickIntervalMilliseconds),
+                        leeway: .milliseconds(1))
         source.setEventHandler { [weak self] in self?.emitTick() }
         timer = source
         source.resume()
@@ -454,40 +181,27 @@ final class AutoScrollController {
     }
 
     private func emitTick() {
-        guard wantsScrolling, isRunning, let anchor else {
-            stopScrolling()
-            return
-        }
-        guard let scrollEventSource else {
+        guard wantsScrolling, isRunning, let anchor, let scrollEventSource else {
             stopScrolling()
             return
         }
         let pointer = NSEvent.mouseLocation
-        let primaryDisplayHeight = CGDisplayBounds(CGMainDisplayID()).height
-        guard primaryDisplayHeight.isFinite, primaryDisplayHeight > 0,
-              pointer.x.isFinite, pointer.y.isFinite else {
+        let height = CGDisplayBounds(CGMainDisplayID()).height
+        guard height.isFinite, height > 0, pointer.x.isFinite, pointer.y.isFinite else {
             stopScrolling()
             return
         }
-        let offset = CGVector(dx: pointer.x - anchor.x, dy: pointer.y - anchor.y)
         let now = DispatchTime.now().uptimeNanoseconds
         let elapsed = lastTickAt.map { Double(now &- $0) / 1_000_000_000 } ?? 0.016
         lastTickAt = now
         if collectDiagnostics { diagnostics.recordTick(milliseconds: elapsed * 1_000) }
-        guard let delta = physics.tick(offset: offset, elapsedSeconds: elapsed) else { return }
-        guard let event = CGEvent(
-            scrollWheelEvent2Source: scrollEventSource,
-            units: .pixel,
-            wheelCount: 2,
-            wheel1: delta.vertical,
-            wheel2: delta.horizontal,
-            wheel3: 0
-        ) else { return }
-        // Quartz scroll events need the current global pointer location to
-        // reach the view under the cursor. AppKit's y axis is inverted against
-        // Quartz relative to the primary display, including on other screens.
+        let offset = CGVector(dx: pointer.x - anchor.x, dy: pointer.y - anchor.y)
+        guard let delta = physics.tick(offset: offset, elapsedSeconds: elapsed),
+              let event = CGEvent(scrollWheelEvent2Source: scrollEventSource, units: .pixel,
+                                  wheelCount: 2, wheel1: delta.vertical,
+                                  wheel2: delta.horizontal, wheel3: 0) else { return }
         event.timestamp = now
-        event.location = CGPoint(x: pointer.x, y: primaryDisplayHeight - pointer.y)
+        event.location = CGPoint(x: pointer.x, y: height - pointer.y)
         event.setIntegerValueField(.eventSourceUserData, value: ScrollFixSyntheticEvent.autoScrollMarker)
         event.post(tap: .cgSessionEventTap)
         if collectDiagnostics { diagnostics.recordPosted(delta) }

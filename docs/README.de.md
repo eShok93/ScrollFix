@@ -59,7 +59,7 @@ Für erkannte Mausradbewegungen ja. Lass **Natürliches Scrollen** in macOS an u
 
 ### Öffnet ein Klick auf das Mausrad einen neuen Tab?
 
-Auf erkannten Links reicht ScrollFix den ursprünglichen Mittelklick an den Browser weiter. Dieser entscheidet, wie er den Link öffnet. Auf normalen Inhalten startet der Klick Autoscroll. Unklare Ziele und Bedienelemente behalten ihr natives Verhalten; unvollständige Bedienungshilfen können die Erkennung begrenzen.
+Auf erkannten Links reicht ScrollFix den ursprünglichen Mittelklick an den Browser weiter. Dieser entscheidet, wie er den Link öffnet. Auf normalen Inhalten startet der Klick Autoscroll. Der Mittelklick-Filter läuft unabhängig von der Oberfläche und kann unterbrochene Klicks wieder aufnehmen. Unklare Ziele und Bedienelemente behalten ihr natives Verhalten; unvollständige Bedienungshilfen können die Erkennung begrenzen.
 
 ### Funktioniert das mit einem Logitech-Freilaufrad?
 
