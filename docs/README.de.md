@@ -4,7 +4,7 @@
 
 ScrollFix ist eine Open-Source-App für die macOS-Menüleiste. Sie richtet sich an alle, die das Mausverhalten von Windows bevorzugen. macOS verwendet dieselbe Einstellung für Maus und Trackpad. ScrollFix korrigiert erkannte Mausradbewegungen getrennt und bewegt die Seite standardmäßig sofort.
 
-[Installationsanleitung](INSTALL.md) · [Selbst bauen](#bauen-und-installieren) · [English](../README.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md)
+[Installationsanleitung](INSTALL.md) · [Selbst bauen](#bauen-und-installieren) · [English](../README.md) · [Probleme lösen](TROUBLESHOOTING.md) · [Datenschutz](PRIVACY.md) · [ScrollFix unterstützen](https://ko-fi.com/eshok93)
 
 ![ScrollFix auf dem Mac: natürliches Trackpad, Windows-Mausrad, Mittelklick-Scrollen und Direkt-Modus](screenshots/scrollfix-current.png)
 
@@ -26,6 +26,8 @@ ScrollFix unterstützt außerdem Home/End und die optionale Auswahl der lokalen 
 **Aktuelle Version: 0.3.2.** Der Quellcode ist aktualisiert; eine verifizierte DMG ist noch nicht veröffentlicht. Mit dem geplanten Download geht es wie bei einer normalen Mac-App: DMG öffnen, ScrollFix nach Programme ziehen, dort öffnen und den macOS-Zugriff erlauben. Dafür brauchst du kein Xcode und keine Terminal-Befehle. [Einfache Installationsanleitung](INSTALL.md).
 
 Für die Veröffentlichung fehlen noch Apples Developer-ID-Zertifikat und Notarisierung. Die alte Preview enthält die aktuellen Funktionen nicht.
+
+**Hilf mit, ScrollFix einfacher installierbar zu machen.** Das [250-€-Ziel auf Ko-fi](https://ko-fi.com/eshok93) hilft, das erste Jahr der Apple-Developer-Mitgliedschaft, Zahlungsgebühren und die weitere Entwicklung zu finanzieren. Mit der Mitgliedschaft kann der Entwickler die App signieren und von Apple auf bekannte Schadsoftware prüfen lassen. Danach soll ein fertiger Download erscheinen. ScrollFix bleibt kostenlos und Open Source. Ein Beitrag ist freiwillig.
 
 ## Bauen und installieren
 

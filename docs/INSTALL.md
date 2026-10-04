@@ -8,6 +8,8 @@ ScrollFix is a Mac app. A `.dmg` is the download container; `ScrollFix.app` insi
 
 A public DMG requires an Apple Developer ID signature and notarization. These are not available for this version yet. A locally prepared DMG is not a verified public release. See [release requirements](RELEASING.md).
 
+Want to help make the normal Mac download possible? The [€250 goal on Ko-fi](https://ko-fi.com/eshok93) helps fund the first year of Apple's developer membership, payment fees and further development. ScrollFix stays free and open source. Support is optional; it is not a purchase or early access to a download.
+
 ## When the verified DMG is available
 
 1. Download the DMG from this repository's GitHub Releases page.
