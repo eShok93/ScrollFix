@@ -6,6 +6,18 @@ ScrollFix is an open-source Mac menu bar app for people who prefer Windows mouse
 
 [Installation guide](docs/INSTALL.md) · [Build from source](#build-and-install) · [Deutsch](docs/README.de.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Privacy](docs/PRIVACY.md) · [Support ScrollFix](https://ko-fi.com/eshok93)
 
+### Help make ScrollFix as easy to install as a normal Mac app
+
+> **€250 community goal** — toward a signed Mac download and continued improvements.
+>
+> Your tip helps fund Apple's developer membership, payment fees and further work on ScrollFix. The membership lets me sign the app and submit it to Apple's security checks.
+>
+> **Every one-time tip helps.** Choose €3, €10, €25 or your own amount on Ko-fi.
+>
+> [![Leave a one-time tip on Ko-fi](docs/support/tip-button.svg)](https://ko-fi.com/eshok93)
+>
+> **ScrollFix stays free and open source.** Support is optional. You can also help by sharing the project or reporting a bug.
+
 ![ScrollFix on macOS: natural trackpad, Windows-style mouse wheel, middle-click scrolling and Direct Windows mode](docs/screenshots/scrollfix-current.png)
 
 *ScrollFix 0.3.2: mouse scrolling, middle-click and Home/End. UI labels are currently German.*
@@ -28,8 +40,6 @@ ScrollFix also supports Home/End navigation and optional local zsh input selecti
 **Current version: 0.3.2.** The source is updated; a verified DMG download is not available yet. The planned installer works like a normal Mac app: open the DMG, drag ScrollFix into Applications, then open it and allow macOS access. No Xcode or Terminal commands are needed with that download. [Simple installation guide](docs/INSTALL.md).
 
 The maintainer still needs an Apple Developer ID certificate and notarization before publishing that DMG. Do not use the old preview expecting the features below.
-
-**Help make ScrollFix easier to install.** The [€250 community goal on Ko-fi](https://ko-fi.com/eshok93) helps fund the first year of Apple's developer membership, payment fees and further development. The membership lets the maintainer sign the app and submit it to Apple's security checks before publishing a ready-to-install download. ScrollFix stays free and open source; support is optional.
 
 ## Build and install
 

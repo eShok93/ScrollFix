@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="52" viewBox="0 0 280 52" role="img" aria-labelledby="title">
+  <title id="title">Leave a tip on Ko-fi</title>
+  <rect width="280" height="52" rx="10" fill="#0969da"/>
+  <path d="M26 19h13v11a6.5 6.5 0 0 1-13 0V19Zm13 2h3a4 4 0 0 1 0 8h-3M24 39h18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="57" y="33" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="700" fill="#fff">Leave a tip on Ko-fi</text>
+</svg>
